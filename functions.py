@@ -1,4 +1,5 @@
 import numpy as np
+import csv
 
 
 def state_to_matrix(state):
@@ -78,6 +79,22 @@ def base10_to_state(num):
     digits.reverse()
     state = np.array(digits)
     return state
+
+nombre = lambda x: 's'+str(x) + '_red.final.txt'
+
+def state(n):
+    '''
+    Recibe un entero entre 1 y 9, regresa la matriz con los estados del archivo 's+n_red.final.txt' 
+    '''
+    archivo0 = open(nombre(n),'r')
+    archivo = csv.reader(archivo0)
+    lista = list(archivo)
+    vector = []
+    for i in range(len(lista)):
+        vector.append(list(map(int,lista[i][0].split(' '))))
+    archivo0.close()
+    return np.matrix(vector)
+#print(estados(3))
     
 
 
