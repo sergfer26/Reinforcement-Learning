@@ -96,5 +96,18 @@ def state(n):
     return np.matrix(vector)
 #print(estados(3))
     
-
+def refresh(matrix,indices,nuevos):
+    '''
+        Actualiza los rewards de una matriz dados los indices
+    '''
+    if len(indices) == len(nuevos):
+        for i in indices:
+            matrix[i:i+1,-1:] = nuevos[i]
+            
+def borra_crea(matrix,n):
+    #name = nombre(n)
+    #os.remove(name)
+    nuevo = open(prueba,'w')
+    nuevo.write(str(matrix))
+    nuevo.close()
 
