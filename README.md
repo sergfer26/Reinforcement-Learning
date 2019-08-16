@@ -1,6 +1,7 @@
 # Tic tac toe
 
 
- functions.py contine funciones para obtener estados equivalentes 
+ agenrt.py contine el jugador 'X' del gato
 
  enviorment.py contine el ambiente para el juego de gato 
+ 
