@@ -5,3 +5,5 @@
 
  enviorment.py contine el ambiente para el juego de gato 
  
+ falta subir instrucciones de instalación
+ 
