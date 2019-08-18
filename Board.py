@@ -9,16 +9,18 @@ class TicTacToe(gym.Env):
     def __init__(self):
         self.action_space = spaces.Discrete(9)
         # self.observation_space = spaces.Discrete(9)
-        self.items = self.reset()
+        self.items = ['']*9
         self.state = [0]*9
         self.winner = None
         self.syms = {'': 0, 'O': 2, 'X': 1}
 
     def reset(self):
-        board = [''] * 9
+        self.items = [''] * 9
+        self.state = [0] * 9
         self.done = False
         self.winner = None
-        return board
+        return self.state
+        
 
     def show_board(self):
         board = """
@@ -64,21 +66,28 @@ class TicTacToe(gym.Env):
              1: Gana X
              2: Gana O  
         '''
+        status = -1
         items = self.items
         for i in range(0, 3):
             j = 3*i
             status = self.is_X_winner(items[i], items[i+3], items[i+6])
+            if status in [1,2]:
+                return status
+
             status = self.is_X_winner(items[j], items[j+1], items[j+2])
+            if status in [1,2]:
+                return status
 
         status = self.is_X_winner(items[0], items[4], items[8])
+        if status in [1,2]:
+                return status
+
         status = self.is_X_winner(items[2], items[4], items[6])
 
-        if '' not in self.items and status == -1:
-            status = 0
-
         return status
-
+        
     def step(self, action):
+        self.done = False
         reward = 0.0
         self.mark_(action, 'X')
         status = self.is_game_over()
@@ -87,24 +96,15 @@ class TicTacToe(gym.Env):
             if status == 1:
                 reward = 1.0
         self.items_to_state()
-        while True:
-            action_O = self.action_space.sample()
-            if self.state[action_O] == 0:
-                break
-        self.mark_(action_O, 'O')
-        self.items_to_state()
+        self.show_board()
+        if self.done:
+            pass
+        else:
+            while True:
+                action_O = self.action_space.sample()
+                if self.state[action_O] == 0:
+                    break
+            self.mark_(action_O, 'O')
+            self.items_to_state()
+            self.show_board()
         return self.state, reward, self.done
-
-
-
- 
-
-    
-
-
-
-
-        
-
-
-
