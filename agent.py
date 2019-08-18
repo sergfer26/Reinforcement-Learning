@@ -26,14 +26,13 @@ class Agent:
             estados posibles
         '''
         for _ in range(n):
-            print('jugada', _)
+            print('------------ turno', _, '------------')
             while True:
                 action = self.board.action_space.sample()
-                if self.state[action] == 0:
+                if self.board.state[action] == 0:
                     break 
 
             new_state, reward, is_done = self.board.step(action)
-            print(self.state_to_matrix(new_state))
             key = self.get_min_state(self.state)[0]
             new_key = self.get_min_state(new_state)[0]
             self.rewards[(key, action, new_key)] = reward
