@@ -1,9 +1,11 @@
 # Tic tac toe
 
 
- agenrt.py contine el jugador 'X' del gato
+ * El archivo ``agenrt.py`` contine el jugador 'X' del gato.
 
- enviorment.py contine el ambiente para el juego de gato 
+ * El archivo ``enviorment.py`` contine el ambiente para el juego de gato. 
  
- falta subir instrucciones de instalación
+ * El archivo ``main.py`` muetra los juegos de prueba.
+ 
+ * Falta subir instrucciones de instalación de ``gym``y demás bibliotecas.
  
