@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import numpy as np
 import gym
 from gym import spaces
@@ -11,14 +12,12 @@ class TicTacToe(gym.Env):
         # self.observation_space = spaces.Discrete(9)
         self.items = ['']*9
         self.state = [0]*9
-        self.winner = None
         self.syms = {'': 0, 'O': 2, 'X': 1}
 
     def reset(self):
         self.items = [''] * 9
         self.state = [0] * 9
         self.done = False
-        self.winner = None
         return self.state
         
 
@@ -48,7 +47,7 @@ class TicTacToe(gym.Env):
         '''
             recibe un estado y actualiza los elemetos del tablero
         '''
-        self.items = [self.syms[key] for key in state]
+        self.items = [self.syms[key] for key in self.state]
 
     def is_X_winner(self, x, y, z):
         if x == y == z and x == 'X':
@@ -71,18 +70,21 @@ class TicTacToe(gym.Env):
         for i in range(0, 3):
             j = 3*i
             status = self.is_X_winner(items[i], items[i+3], items[i+6])
-            if status in [1,2]:
+            if status in [1, 2]:
                 return status
 
             status = self.is_X_winner(items[j], items[j+1], items[j+2])
-            if status in [1,2]:
+            if status in [1, 2]:
                 return status
 
         status = self.is_X_winner(items[0], items[4], items[8])
-        if status in [1,2]:
+        if status in [1, 2]:
                 return status
 
         status = self.is_X_winner(items[2], items[4], items[6])
+
+        if status == -1 and '' not in self.items:
+            return 0
 
         return status
         
