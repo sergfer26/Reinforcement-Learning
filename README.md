@@ -7,5 +7,8 @@
  
  * El archivo ``main.py`` muetra los juegos de prueba.
  
+ * El archivo ``function.py`` es auxiliar y contiene funciones de prueba que se pudieran usar más adelante.
+ 
  * Falta subir instrucciones de instalación de ``gym``y demás bibliotecas.
+
  
