@@ -19,25 +19,48 @@ class Agent:
         self.rewards = collections.defaultdict(float)
         self.transits = collections.defaultdict(collections.Counter)
         self.values = collections.defaultdict(float)
+        self.gamma = 0.1
+    
+    def select_random_action(self, mark):
+        '''
+            Realiza un movimiento aleatorio
+        '''
+        while True:
+            action = self.board.action_space.sample()
+            if self.board.state[action] == 0:
+                return action
+    
+    def update_dictionaries(self, action, mark):
+        '''
+            Actualiza las diccionarios asociados a
+            las tablas de valores.
+        '''
+        new_state, reward, is_done = self.board.step(action, mark)
+        key = self.get_min_state(self.state)[0]
+        new_key = self.get_min_state(new_state)[0]
+        self.rewards[(key, action, new_key)] = reward
+        self.values[key] = reward
+        self.transits[(key, action)][new_key] += 1
+        return is_done, new_state
+
 
     def play_n_random_steps(self, n):
         '''
             Realiza n turnos con jugadas aleatorias para conocer 
-            estados posibles
+            estados posibles.
         '''
+        self.update_dictionaries(0, '')
         for _ in range(n):
-            print('------------ turno', _, '------------')
-            while True:
-                action = self.board.action_space.sample()
-                if self.board.state[action] == 0:
-                    break 
-
-            new_state, reward, is_done = self.board.step(action)
-            key = self.get_min_state(self.state)[0]
-            new_key = self.get_min_state(new_state)[0]
-            self.rewards[(key, action, new_key)] = reward
-            self.transits[(key, action)][new_key] += 1
+            action = self.select_random_action('X')
+            is_done, new_state = self.update_dictionaries(action, 'X')
             self.state = self.board.reset() if is_done else new_state
+            if is_done: 
+                pass
+            else:
+                action = self.select_random_action('O')
+                is_done, new_state = self.update_dictionaries(action, 'O')
+                self.state = self.board.reset() if is_done else new_state
+                self.update_dictionaries(action, 'O')
 
     def state_to_matrix(self, state):
         '''
@@ -112,13 +135,16 @@ class Agent:
         while num > 0:
             digits.insert(0, num % base)
             num = num // base
+        n = 9 - len(digits)
+        for i in range(0, n):
+            digits.insert(0, 0)
         digits.reverse()
         state = np.array(digits)
         return state
  
     def get_min_state(self, state):
         '''
-            Obtine el minimo valor de estado asociado 
+            Obtine el minimo valor de estado asociado.
         '''
         states = collections.defaultdict(list)
         key = self.state_to_base10(state)
@@ -133,4 +159,47 @@ class Agent:
         return min(states.items())
 
 
+class Agent_value_iteration(Agent):
 
+    def calc_action_value(self, state, action):
+        target_counts = self.transits[(state, action)]
+        total = sum(target_counts.values())
+        action_values = 0.0
+        for tgt_state, count in target_counts.items():
+            reward = self.rewards[(state, action, tgt_state)]
+            action_value += (count/total)*(reward + self.gamma *
+            self.values[tgt_state] )
+        return action_value
+
+    def select_action(self, state):
+        best_action, best_value, = None, None
+        for action in range(self.board.action_space.n):
+            if (state, action) in self.transits.keys():
+                action_value = self.calc_action_value(state, action)
+                if best_value is None or best_value < action_value:
+                    best_value = action_value
+                    best_action = action
+            else:
+                pass
+            return best_action
+
+    def play_episode(self, env):
+        total_reward = 0.0
+        state = env.reset()
+        while True:
+            action = self.select_action(state)
+            new_state, reward, is_done = env.step(action)
+            self.rewards[(state, action, new_state)] = reward
+            self.transits[(state, action)][new_state] += 1
+            total_reward += reward
+            if is_done:
+                break
+            state = new_state
+        return total_reward
+
+#    def check_mark(self, action):
+#        if self.board.state[action] == 0:
+
+#    def value_iteration(self):
+#        for state in self.values.keys():
+#            state_values = [self.calc_action_value(state, action)]
