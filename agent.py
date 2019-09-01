@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-from Board import TicTacToe
+from board import TicTacToe
 import gym
 import collections
 import numpy as np
 
 
 class Agent:
+    '''
+        Agente base, sigue la política aleatoria
+    '''
   
     def __init__(self):
         '''
@@ -20,6 +23,7 @@ class Agent:
         self.transits = collections.defaultdict(collections.Counter)
         self.values = collections.defaultdict(float)
         self.gamma = 0.1
+        self.keys = [0]
     
     def select_random_action(self, mark):
         '''
@@ -38,18 +42,18 @@ class Agent:
         new_state, reward, is_done = self.board.step(action, mark)
         key = self.get_min_state(self.state)[0]
         new_key = self.get_min_state(new_state)[0]
+        self.keys.append(new_key)
         self.rewards[(key, action, new_key)] = reward
         self.values[key] = reward
         self.transits[(key, action)][new_key] += 1
         return is_done, new_state
-
 
     def play_n_random_steps(self, n):
         '''
             Realiza n turnos con jugadas aleatorias para conocer 
             estados posibles.
         '''
-        self.update_dictionaries(0, '')
+        #self.update_dictionaries(0, '')
         for _ in range(n):
             action = self.select_random_action('X')
             is_done, new_state = self.update_dictionaries(action, 'X')
@@ -60,7 +64,7 @@ class Agent:
                 action = self.select_random_action('O')
                 is_done, new_state = self.update_dictionaries(action, 'O')
                 self.state = self.board.reset() if is_done else new_state
-                self.update_dictionaries(action, 'O')
+        self.state = self.board.reset()
 
     def state_to_matrix(self, state):
         '''
@@ -146,6 +150,10 @@ class Agent:
         '''
             Obtine el minimo valor de estado asociado.
         '''
+        states = self.get_all_states(state)
+        return min(states.items())
+
+    def get_all_states(self, state):
         states = collections.defaultdict(list)
         key = self.state_to_base10(state)
         states[key] = state 
@@ -156,50 +164,29 @@ class Agent:
                 new_key = self.state_to_base10(new_state)
                 states[new_key] = new_state
             new_state = self.reflect(new_state)
-        return min(states.items())
+        return states
+
+    def key_to_obs(self, key):
+        return self.keys.index(key)
+
+        
+##########################################################
+    def print_board(self, num1, num2):
+        state1 = self.base10_to_state(num1)
+        state2 = self.base10_to_state(num2)
+        self.board.state = state1
+        self.board.state_to_items()
+        self.board.show_board()
+        self.board.state = state2
+        self.board.state_to_items()
+        self.board.show_board()
+        self.board.reset()
+
+    def show_equiv_boards(self, states):
+        for key, state in states.items():
+            self.board.state = state
+            self.board.state_to_items()
+            self.board.show_board()
+            print(key)
 
 
-class Agent_value_iteration(Agent):
-
-    def calc_action_value(self, state, action):
-        target_counts = self.transits[(state, action)]
-        total = sum(target_counts.values())
-        action_values = 0.0
-        for tgt_state, count in target_counts.items():
-            reward = self.rewards[(state, action, tgt_state)]
-            action_value += (count/total)*(reward + self.gamma *
-            self.values[tgt_state] )
-        return action_value
-
-    def select_action(self, state):
-        best_action, best_value, = None, None
-        for action in range(self.board.action_space.n):
-            if (state, action) in self.transits.keys():
-                action_value = self.calc_action_value(state, action)
-                if best_value is None or best_value < action_value:
-                    best_value = action_value
-                    best_action = action
-            else:
-                pass
-            return best_action
-
-    def play_episode(self, env):
-        total_reward = 0.0
-        state = env.reset()
-        while True:
-            action = self.select_action(state)
-            new_state, reward, is_done = env.step(action)
-            self.rewards[(state, action, new_state)] = reward
-            self.transits[(state, action)][new_state] += 1
-            total_reward += reward
-            if is_done:
-                break
-            state = new_state
-        return total_reward
-
-#    def check_mark(self, action):
-#        if self.board.state[action] == 0:
-
-#    def value_iteration(self):
-#        for state in self.values.keys():
-#            state_values = [self.calc_action_value(state, action)]
