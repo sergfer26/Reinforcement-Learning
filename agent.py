@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from board import TicTacToe
-import gym
 import collections
 import numpy as np
 
@@ -23,7 +22,6 @@ class Agent:
         self.transits = collections.defaultdict(collections.Counter)
         self.values = collections.defaultdict(float)
         self.gamma = 0.1
-        self.keys = [0]
     
     def select_random_action(self, mark):
         '''
@@ -39,13 +37,13 @@ class Agent:
             Actualiza las diccionarios asociados a
             las tablas de valores.
         '''
-        new_state, reward, is_done = self.board.step(action, mark)
         key = self.get_min_state(self.state)[0]
+        new_state, reward, is_done = self.board.step(action, mark)
         new_key = self.get_min_state(new_state)[0]
-        self.keys.append(new_key)
         self.rewards[(key, action, new_key)] = reward
-        self.values[key] = reward
-        self.transits[(key, action)][new_key] += 1
+        self.values[new_key] = reward
+        index = self.get_state_index(self.state)
+        self.transits[(key, action, index)][new_key] += 1
         return is_done, new_state
 
     def play_n_random_steps(self, n):
@@ -53,7 +51,8 @@ class Agent:
             Realiza n turnos con jugadas aleatorias para conocer 
             estados posibles.
         '''
-        #self.update_dictionaries(0, '')
+        key = self.state_to_base10(self.state)
+        self.values[key] = 0
         for _ in range(n):
             action = self.select_random_action('X')
             is_done, new_state = self.update_dictionaries(action, 'X')
@@ -166,27 +165,31 @@ class Agent:
             new_state = self.reflect(new_state)
         return states
 
-    def key_to_obs(self, key):
-        return self.keys.index(key)
+    def get_state_index(self, state):
+        states = self.get_all_states(state)
+        od_states = collections.OrderedDict(sorted(states.items()))
+        keys_list = list(od_states.keys())
+        key = self.state_to_base10(state)
+        return(keys_list.index(key))
 
         
-##########################################################
-    def print_board(self, num1, num2):
-        state1 = self.base10_to_state(num1)
-        state2 = self.base10_to_state(num2)
-        self.board.state = state1
-        self.board.state_to_items()
-        self.board.show_board()
-        self.board.state = state2
-        self.board.state_to_items()
-        self.board.show_board()
-        self.board.reset()
 
-    def show_equiv_boards(self, states):
-        for key, state in states.items():
-            self.board.state = state
-            self.board.state_to_items()
-            self.board.show_board()
-            print(key)
+#    def print_board(self, num1, num2):
+#        state1 = self.base10_to_state(num1)
+#        state2 = self.base10_to_state(num2)
+#        self.board.state = state1
+#        self.board.state_to_items()
+#        self.board.show_board()
+#        self.board.state = state2
+#        self.board.state_to_items()
+#        self.board.show_board()
+#        self.board.reset()
+
+#    def show_equiv_boards(self, states):
+#        for key, state in states.items():
+#            self.board.state = state
+#            self.board.state_to_items()
+#            self.board.show_board()
+#            print(key)
 
 
