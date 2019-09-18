@@ -17,53 +17,63 @@ class Agent:
             Value table: state -> value.
         '''
         self.board = TicTacToe()
-        self.state = self.board.state
+        self.key = 0
         self.rewards = collections.defaultdict(float)
         self.transits = collections.defaultdict(collections.Counter)
         self.values = collections.defaultdict(float)
         self.gamma = 0.1
     
-    def select_random_action(self, mark):
+    def select_random_action(self, player, state):
         '''
             Realiza un movimiento aleatorio
         '''
         while True:
             action = self.board.action_space.sample()
-            if self.board.state[action] == 0:
+            if state[action] == 0:
                 return action
     
-    def update_dictionaries(self, action, mark):
+    def update_dicts(self, reflected, rots, player):
         '''
             Actualiza las diccionarios asociados a
             las tablas de valores.
         '''
-        key = self.get_min_state(self.state)[0]
-        new_state, reward, is_done = self.board.step(action, mark)
+        state = self.base10_to_state(self.key)
+        action = self.select_random_action('X', state)
+        board_action = self.get_board_action(action, reflected, rots)
+        new_state, reward, is_done = self.board.step(board_action, player)
         new_key = self.get_min_state(new_state)[0]
-        self.rewards[(key, action, new_key)] = reward
+        [_, reflected, rots] = self.get_min_state(new_state)[1]
+        self.rewards[(self.key, action, new_key)] = reward
         self.values[new_key] = reward
-        index = self.get_state_index(self.state)
-        self.transits[(key, action, index)][new_key] += 1
-        return is_done, new_state
+        self.transits[(self.key, action)][new_key] += 1
+        return is_done, new_key, reflected, rots
+
+    def reset_key(self):
+        self.board.reset()
+        return 0
+
+    def reset_rr(self):
+        return False, 0
 
     def play_n_random_steps(self, n):
         '''
             Realiza n turnos con jugadas aleatorias para conocer 
             estados posibles.
         '''
-        key = self.state_to_base10(self.state)
-        self.values[key] = 0
+        self.values[self.key] = 0
+        reflected = False
+        rots = 0
         for _ in range(n):
-            action = self.select_random_action('X')
-            is_done, new_state = self.update_dictionaries(action, 'X')
-            self.state = self.board.reset() if is_done else new_state
+            is_done, new_key, reflected, rots = self.update_dicts(reflected, rots, 'X')
+            self.key = self.reset_key() if is_done else new_key
             if is_done: 
-                pass
+                reflected, rots = self.reset_rr()
             else:
-                action = self.select_random_action('O')
-                is_done, new_state = self.update_dictionaries(action, 'O')
-                self.state = self.board.reset() if is_done else new_state
-        self.state = self.board.reset()
+                is_done, new_key, reflected, rots = self.update_dicts(reflected, rots, 'O')
+                self.key = self.reset_key() if is_done else new_key
+                if is_done:
+                    reflected, rots = self.reset_rr()
+        self.key = self.reset_key()
 
     def state_to_matrix(self, state):
         '''
@@ -85,18 +95,44 @@ class Agent:
         aux[:, 1] = mat[1, ]
         aux[:, 0] = mat[2, ]
         state = aux.reshape(-1, 9)[0, ]
-        return state
+        return list(state)
 
-    def reflect(self, state):
+    def rotate_left(self, state):
         '''
-            Intercambia la columna 3 por la 1 (Reflexión de abajo horizontal).
+            Da el estado de rotar el tablero en el sentido antihorario 
+            de acuerdo a las columnas del tablero. 
+        '''
+        mat = self.state_to_matrix(state)
+        aux = np.zeros((3, 3), dtype=int)
+        aux[0, ] = mat[:, 2]
+        aux[1, ] = mat[:, 1]
+        aux[2, ] = mat[:, 0]
+        state = aux.reshape(-1, 9)[0, ]
+        return list(state)
+
+
+    def reflect_h(self, state):
+        '''
+            Intercambia el renglón 3 por el 1 (Reflexión horizontal).
         '''
         a = state[0:3]
         b = state[3:6]
         c = state[6:]
         aux = np.concatenate((b, a), axis=None)
         state = np.concatenate((c, aux), axis=None)
-        return state
+        return list(state)
+
+    def reflect_v(self, state):
+        '''
+            Intercambia la columna 3 por la 1 (Reflexión vertical).
+        '''
+        mat = self.state_to_matrix(state)
+        aux = np.zeros((3, 3), dtype=int)
+        aux[:, 0] = mat[:, 2]
+        aux[:, 1] = mat[:, 1]
+        aux[:, 2] = mat[:, 0]
+        state = aux.reshape(-1, 9)[0, ]
+        return list(state)
 
     def state_equal(self, state1, state2):
         '''
@@ -105,7 +141,7 @@ class Agent:
         if self.is_rotated(state1, state2):
             return True
         else:
-            state1 = self.reflect(state1)
+            state1 = self.reflect_h(state1)
             if self.is_rotated(state1, state2):
                 return True
         return False
@@ -155,41 +191,31 @@ class Agent:
     def get_all_states(self, state):
         states = collections.defaultdict(list)
         key = self.state_to_base10(state)
-        states[key] = state 
+        reflected = False
+        states[key] = [state, reflected, 0] 
         new_state = state
         for j in range(2):
-            for i in range(4):
+            for i in range(3):
                 new_state = self.rotate_right(new_state)
                 new_key = self.state_to_base10(new_state)
-                states[new_key] = new_state
-            new_state = self.reflect(new_state)
+                states[new_key] = [new_state, reflected, i+1]
+            if not reflected:
+                reflected = True
+                new_state = self.reflect_h(state)
+                new_key = self.state_to_base10(new_state)
+                states[new_key] = [new_state, reflected, 0]
         return states
 
-    def get_state_index(self, state):
-        states = self.get_all_states(state)
-        od_states = collections.OrderedDict(sorted(states.items()))
-        keys_list = list(od_states.keys())
-        key = self.state_to_base10(state)
-        return(keys_list.index(key))
+    def get_board_action(self, action, reflected, rots):
+        actions = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        if reflected:
+            if rots % 2 == 0:
+                actions = self.reflect_h(actions)
+            else: 
+                actions = self.reflect_v(actions)
+        for i in range(0, rots):
+            actions = self.rotate_left(actions)
+        return actions.index(action)
 
-        
-
-#    def print_board(self, num1, num2):
-#        state1 = self.base10_to_state(num1)
-#        state2 = self.base10_to_state(num2)
-#        self.board.state = state1
-#        self.board.state_to_items()
-#        self.board.show_board()
-#        self.board.state = state2
-#        self.board.state_to_items()
-#        self.board.show_board()
-#        self.board.reset()
-
-#    def show_equiv_boards(self, states):
-#        for key, state in states.items():
-#            self.board.state = state
-#            self.board.state_to_items()
-#            self.board.show_board()
-#            print(key)
 
 
