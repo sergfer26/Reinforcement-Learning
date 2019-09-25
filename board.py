@@ -8,7 +8,7 @@ class TicTacToe(gym.Env):
 
     def __init__(self):
         self.action_space = spaces.Discrete(9)
-        self.observation_space = spaces.Discrete(765)
+        self.obs = [0, 1, 2, 3, 4, 5, 6, 7, 8]
         self.done = False
         self.items = [''] * 9
         self.state = [0] * 9
@@ -36,12 +36,12 @@ class TicTacToe(gym.Env):
         """.format(*self.items)
         print(board)
 
-    def mark_(self, action, mark):
+    def mark_(self, action, player):
         '''
             Marca alguna casilla del tabler
         '''
         if self.items[action] == '':
-            self.items[action] = mark
+            self.items[action] = player
         else:
             print('espacio ocupadp')
         self.items_to_state()
@@ -116,18 +116,18 @@ class TicTacToe(gym.Env):
 
         return status
 
-    def step(self, action, mark):
+    def step(self, action, player):
         '''
             Recibe una acción de un jugador y realiza el 
             movimiento
         '''
         reward = 0.0
-        self.mark_(action, mark)
+        self.mark_(action, player)
         status = self.is_game_over()
         if status >= 0:
             self.done = True
             if status == 1:
                 reward = 1.0
-        print('------------ turno de ', mark, '------------')
+        print('------------ turno de ', player, '------------')
         self.show_board()
         return self.state, reward, self.done
