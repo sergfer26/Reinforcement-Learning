@@ -1,13 +1,19 @@
-from agent import Agent
+#!/usr/bin/env python3
+from base_agent import BaseAgent
 import collections
 
-class Agent_TQL(Agent):
+
+class Agent_TQL(BaseAgent):
+    '''
+        Agente basado en el método de value iteration
+    '''
+
     def __init__(self):
-        Agent.__init__(self)
+        BaseAgent.__init__(self)
         self.values = collections.defaultdict(float) 
         self.alpha = 0.2
 
-    def sample_env(self, player, reflected, rots):
+    def sample_env(self, reflected, rots, player):
         state = self.base10_to_state(self.key)
         action = self.select_random_action(state)
         board_action = self.get_board_action(action, reflected, rots)
@@ -17,13 +23,13 @@ class Agent_TQL(Agent):
         [_, reflected, rots] = self.get_min_state(new_state)[1]
         self.values[(self.key, action)] = 0
         self.key = self.reset_key if is_done else new_key
-        return old_key, action, reward, new_key, reflected, rots
+        self.values[(self.key, action)] = 0
+        return old_key, action, reward, new_key, reflected, rots, is_done
 
     def best_value_and_action(self, key):
         best_value, best_action = None, None
         values = list(self.values.keys())
-        actions = [ a for k, a in values if key == k]
-        import pdb; pdb.set_trace()
+        actions = [a for k, a in values if key == k]
         for action in actions:
             action_value = self.values[(key, action)]
             if best_value is None or best_value < action_value:
@@ -35,7 +41,7 @@ class Agent_TQL(Agent):
         best_value, _ = self.best_value_and_action(nk)
         new_val = r + self.gamma * best_value
         old_val = self.values[(k, a)]
-        self.values[(k, a)] = old_val * (1- self.alpha) + new_val * self.alpha
+        self.values[(k, a)] = old_val * (1 - self.alpha) + new_val * self.alpha
 
     def play_episode(self, board):
         total_reward = 0.0

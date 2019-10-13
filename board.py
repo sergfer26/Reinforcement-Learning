@@ -126,8 +126,12 @@ class TicTacToe(gym.Env):
         status = self.is_game_over()
         if status >= 0:
             self.done = True
-            if status == 1:
+            if status == 0:
+                status = 0.5
+            elif status == 1:
                 reward = 1.0
+            elif status == 2:
+                reward = 0.0
         print('------------ turno de ', player, '------------')
         self.show_board()
         return self.state, reward, self.done

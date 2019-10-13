@@ -6,13 +6,13 @@ if __name__ == '__main__':
     board = ttt()
     player = atql()
     TE = 200
-    reflected = False
+    ref = False
     rots = 0
     i = 0
     best_reward = 0.0
     players = ['X', 'O']
     while True:
-        k, a, r, nk, reflected, rots = player.sample_env(players[i % 2], reflected, rots)
+        k, a, r, nk, ref, rots, done  = player.sample_env(ref, rots, players[i % 2])
         player.value_update(k, a, r, nk)
 
         reward = 0.0

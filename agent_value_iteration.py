@@ -17,7 +17,7 @@ class Agent_value_iteration(Agent):
     def select_action(self, key):
         best_action, best_value, = None, None
         transits = list(self.transits.keys())
-        actions = [ a for k, a in transits if key == k]
+        actions = [a for k, a in transits if key == k]
         for action in actions:
             action_value = self.calc_action_value(key, action)
             if best_value is None or best_value < action_value:
@@ -36,7 +36,6 @@ class Agent_value_iteration(Agent):
         rots = 0
         players = ['X', 'O']
         while True:
-            state = self.base10_to_state(key)
             action = self.select_action(key)
             board_action = self.get_board_action(action, reflected, rots)
             new_state, reward, is_done = env.step(board_action, players[k % 2])
@@ -59,9 +58,22 @@ class Agent_value_iteration(Agent):
     def value_iteration(self):
         transits = list(self.transits.keys())
         for key in list(self.values.keys()): 
-            state_values = []
-            value = self.values[key]
-            actions = [ a for k, a in transits if key == k]
+            state_vals = []
+            val = self.values[key]
+            actions = [a for k, a in transits if key == k]
             for action in actions:
-                state_values.append(self.calc_action_value(key, action))  
-                self.values[key] = max(state_values) if len(state_values) else self.value
+                state_vals.append(self.calc_action_value(key, action))  
+            self.values[key] = max(state_vals) if len(state_vals) else val
+    
+    def get_sorted_values(self):
+        turns = self.turns
+        vals = self.values
+        sorted_items = sorted(vals.items(), key=lambda x: turns.get(x[0])) 
+        return dict(sorted_items)
+        
+    def values_to_list(self):
+        values = self.get_sorted_values().values()
+        return list(values)
+
+    
+

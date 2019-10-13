@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 from board import TicTacToe as ttt
-from agent_value_iteration import Agent_value_iteration as agent_vi
+from agent_value_iteration import Agent_value_iteration as avi
 from tensorboardX import SummaryWriter
 
 if __name__ == "__main__":
     TE = 100  # test episodes
     test_board = ttt()
-    player = agent_vi()
+    player = avi()
     writer = SummaryWriter(comment='v-learning')
     i = 0
     best_reward = 0.0
-    player.play_n_random_steps(6000)
     while True:
+        player.play_n_random_games(400)
         i += 1
         player.value_iteration()
         reward = 0.0 
@@ -27,5 +27,28 @@ if __name__ == "__main__":
             break 
     writer.close()
 
-    print(player.values)
 
+import numpy as np
+from agent_value_iteration import Agent_value_iteration as avi
+from test_heatmap import plot_heatmap
+
+player = avi()
+player.play_n_random_games(4000)
+n = len(player.values_to_list())
+k = 0
+z = np.array([])
+y = np.zeros((1, n), dtype=float)
+while True:
+    player.value_iteration()
+    x = np.array(player.values_to_list())
+    if np.linalg.norm(x-y) == 0:
+        z = np.vstack([z, x])
+        break 
+    else: 
+        y = x
+print(z)
+
+
+
+
+    

@@ -23,4 +23,5 @@ def plot_examples(cms):
         fig.colorbar(psm, ax=ax)
     plt.show()
 
+
 plot_examples([viridis, newcmp])
