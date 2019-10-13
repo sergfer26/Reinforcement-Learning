@@ -5,13 +5,14 @@ import collections
 
 class Agent_TQL(BaseAgent):
     '''
-        Agente basado en el método de value iteration
+    Agente basado en tabular q learning
     '''
 
     def __init__(self):
         BaseAgent.__init__(self)
         self.values = collections.defaultdict(float) 
-        self.alpha = 0.2
+        self.alpha = 0.5
+        self.gamma = 0.5
 
     def sample_env(self, reflected, rots, player):
         state = self.base10_to_state(self.key)
@@ -53,6 +54,7 @@ class Agent_TQL(BaseAgent):
         k = 0
         while True:
             _, action = self.best_value_and_action(key)
+            import pdb; pdb.set_trace()
             board_action = self.get_board_action(action, reflected, rots)
             new_state, reward, is_done = board.step(board_action, players[k % 2])
             new_key = self.get_min_state(new_state)[0]
