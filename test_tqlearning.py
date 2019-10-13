@@ -1,6 +1,6 @@
 from board import TicTacToe as ttt
 from agent_tabular_qlearning import Agent_TQL as atql
-from tensorboardX import SummaryWriter
+#from tensorboardX import SummaryWriter
 
 if __name__ == '__main__':
     board = ttt()
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     best_reward = 0.0
     players = ['X', 'O']
     while True:
-        k, a, r, nk, ref, rots, done  = player.sample_env(ref, rots, players[i % 2])
+        k, a, r, nk, ref, rots, done = player.sample_env(ref, rots, players[i % 2])
         player.value_update(k, a, r, nk)
 
         reward = 0.0
@@ -20,11 +20,11 @@ if __name__ == '__main__':
             reward += player.play_episode(board)
         reward /= TE
         i += 1
-        writer.add_scalar('reward', reward, i)
+        #writer.add_scalar('reward', reward, i)
         if reward > best_reward:
             print('Best reward updated %.3f -> %.3f' % (best_reward, reward))
             best = reward
         if reward > 0.70:
             print('Solved in %d iterations!' % i)
             break
-    writer.close()
+    #writer.close()

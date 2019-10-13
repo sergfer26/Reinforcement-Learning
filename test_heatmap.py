@@ -8,8 +8,7 @@ heat_map = sb.heatmap(data)
 plt.show()
 
 
-a = np.random.random((50, 765))
-plt.imshow(a, cmap='hot', interpolation='nearest')
+plt.imshow(data, cmap='hot', interpolation='nearest')
 plt.show()
 
 #def plot_heatmap(data):

@@ -3,7 +3,7 @@ import gym
 from gym import spaces
 
 
-class TicTacToe(gym.Env): 
+class Board(gym.Env): 
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
@@ -43,7 +43,7 @@ class TicTacToe(gym.Env):
         if self.items[action] == '':
             self.items[action] = player
         else:
-            print('espacio ocupadp')
+            print('espacio ocupado')
         self.items_to_state()
 
     def items_to_state(self):
@@ -127,11 +127,11 @@ class TicTacToe(gym.Env):
         if status >= 0:
             self.done = True
             if status == 0:
-                status = 0.5
+                reward = 0.0
             elif status == 1:
                 reward = 1.0
             elif status == 2:
-                reward = 0.0
+                reward = -1.0
         print('------------ turno de ', player, '------------')
         self.show_board()
         return self.state, reward, self.done

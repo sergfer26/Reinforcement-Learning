@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from board import TicTacToe
+from board import Board
 import collections
 import numpy as np
 
@@ -14,7 +14,7 @@ class BaseAgent:
         '''
         Establece el tablero del jugador y su llave inicial.
         '''
-        self.board = TicTacToe()
+        self.board = Base()
         self.key = 0
 
     def select_random_action(self, state):
