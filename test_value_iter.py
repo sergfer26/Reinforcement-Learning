@@ -1,32 +1,39 @@
 #!/usr/bin/env python3
 from board import Board as ttt
-from agent_value_iteration import Agent_value_iteration as agent_vi
+from agent import AgentVI as avi
+from base_agent import remap_keys
+from collections import Counter
 import numpy as np
+import json
 from numpy.linalg import norm as norma
 
-def Matriz():
-    player = agent_vi()
+if __name__ == "__main__":
+    player = avi()
     matrix = []
-    player.play_n_random_steps(1000)
+    player.play_n_random_games(2000)
     dim = len(player.values)
-    y = np.repeat(0,dim)
-    print(dim)
+    y = np.repeat(0, dim)
     epsilon = 0.01
     i = 0
     while True:
         player.value_iteration()
         x = np.array(list(player.values.values()))
         matrix.append(x)
-        i+=1
+        i += 1
         if norma(x-y) < epsilon:
             break
         y = x
-    matrix = np.flip(matrix,axis = 0)
-    matrix.reshape((i,dim))
-    
-    return matrix
+    matrix = np.flip(matrix, axis=0)
+    matrix.reshape((i, dim))
 
-print(Matriz())
+    transits = remap_keys(player.transits, Counter)
+    rewards = remap_keys(player.rewards)
+    
+    json.dump(player.values, open("values.txt",'w'))
+    json.dump(transits, open("transits.txt",'w'))
+    json.dump(rewards, open("rewards.txt",'w'))
+    
+
 
 
 
