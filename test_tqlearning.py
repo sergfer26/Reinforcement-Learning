@@ -1,30 +1,33 @@
-from board import TicTacToe as ttt
 from agent_tabular_qlearning import Agent_TQL as atql
-#from tensorboardX import SummaryWriter
+from base_agent import remap_keys
+import numpy as np 
+from numpy.linalg import norm as norma
+import json
 
 if __name__ == '__main__':
-    board = ttt()
     player = atql()
-    TE = 200
     ref = False
     rots = 0
-    i = 0
-    best_reward = 0.0
     players = ['X', 'O']
-    while True:
+    matrix = []
+    player.play_n_random_games(2000)
+    dim = len(player.values)
+    y = np.repeat(0, dim)
+    epsilon = 0.01
+    for i in range(10000):
         k, a, r, nk, ref, rots, done = player.sample_env(ref, rots, players[i % 2])
         player.value_update(k, a, r, nk)
-
-        reward = 0.0
-        for _ in range(TE):
-            reward += player.play_episode(board)
-        reward /= TE
+        if done: 
+            player.key = 0
+            player.board.reset()
+        x = np.array(list(player.values.values()))
+        matrix.append(x)
         i += 1
-        #writer.add_scalar('reward', reward, i)
-        if reward > best_reward:
-            print('Best reward updated %.3f -> %.3f' % (best_reward, reward))
-            best = reward
-        if reward > 0.70:
-            print('Solved in %d iterations!' % i)
-            break
-    #writer.close()
+        #if norma(x-y) < epsilon:
+        #    break
+        y = x
+    matrix = np.flip(matrix, axis=0)
+    matrix.reshape((i, dim))
+
+    values = remap_keys(player.values)
+    json.dump(values, open("qvalues.txt",'w'))
