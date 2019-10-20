@@ -1,7 +1,32 @@
 #!/usr/bin/env python3
 from board import Board
 import collections
+from collections import defaultdict
+from ast import literal_eval 
+
 import numpy as np
+
+PLAYERS = ['X', 'O']
+
+
+def diff(first, second):
+    second = set(second)
+    return [item for item in first if item not in second]
+
+
+def remap_keys(mapping, type_=float): 
+    dict_ = defaultdict(type_) 
+    for k, v in mapping.items(): 
+        dict_[str(k)] = v 
+    return dict_
+
+
+def remap_stringkeys(mapping, type_=float):
+    dict_ = defaultdict(type_)
+    for k, v, in mapping.items():
+        k = literal_eval(k)
+        dict_[k] = v
+    return dict_
 
 
 class BaseAgent:
@@ -14,7 +39,7 @@ class BaseAgent:
         '''
         Establece el tablero del jugador y su llave inicial.
         '''
-        self.board = Base()
+        self.board = Board()
         self.key = 0
 
     def select_random_action(self, state):
@@ -120,7 +145,7 @@ class BaseAgent:
             state1 = self.rotate_right(state1)
         return False
 
-    def state_to_base10(self, state):
+    def state_to_key(self, state):
         '''
         Transforma el vector de estados de base 3 a un número de 
         base 10.
@@ -130,9 +155,9 @@ class BaseAgent:
         powers = np.array(range(9))
         vec = np.array([3]*9)
         base = np.power(vec, powers)
-        return np.dot(base, state)
+        return int(np.dot(base, state))
 
-    def base10_to_state(self, num):
+    def key_to_state(self, num):
         '''
         Transforma un número de base 10 a uno en base 3.
         - Param (num): número en base 10.
@@ -148,7 +173,7 @@ class BaseAgent:
             digits.insert(0, 0)
         digits.reverse()
         state = np.array(digits)
-        return state
+        return list(state)
  
     def get_min_state(self, state):
         '''
@@ -171,19 +196,19 @@ class BaseAgent:
         - Regresa (dict): diccionario con todos los estados.
         '''
         states = collections.defaultdict(list)
-        key = self.state_to_base10(state)
+        key = self.state_to_key(state)
         reflected = False
         states[key] = [state, reflected, 0] 
         new_state = state
         for j in range(2):
             for i in range(3):
                 new_state = self.rotate_right(new_state)
-                new_key = self.state_to_base10(new_state)
+                new_key = self.state_to_key(new_state)
                 states[new_key] = [new_state, reflected, i+1]
             if not reflected:
                 reflected = True
                 new_state = self.reflect_h(state)
-                new_key = self.state_to_base10(new_state)
+                new_key = self.state_to_key(new_state)
                 states[new_key] = [new_state, reflected, 0]
         return states
 
@@ -222,3 +247,24 @@ class BaseAgent:
         - Regresa (ref, rots): reflexión y rotaciones.
         '''
         return False, 0
+    
+   # def explore_env(self):
+   #     key = self.key
+   #     self.board.reset()
+   #     k = 0
+   #     while True: 
+   #         player = PLAYERS[k % 2]
+   #         state = self.key_to_state(key)
+   #         self.board.state = state
+   #         self.board.state_to_items()
+   #         actions = [a for a, e in enumerate(state) if e == 0]
+   #         for action in actions:
+   #             self.board.mark_(action, player)
+   #             state = self.board.state
+                
+
+                
+
+
+
+
