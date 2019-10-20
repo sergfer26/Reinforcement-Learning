@@ -118,8 +118,7 @@ class Board(gym.Env):
 
     def step(self, action, player):
         '''
-            Recibe una acción de un jugador y realiza el 
-            movimiento
+            Recibe una acción de un jugador y realiza el movimiento
         '''
         reward = 0.0
         self.mark_(action, player)

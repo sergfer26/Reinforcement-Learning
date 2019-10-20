@@ -21,11 +21,20 @@ def remap_keys(mapping, type_=float):
     return dict_
 
 
-def remap_stringkeys(mapping, type_=float):
+def remap_stringkeys_rewards(mapping, type_=float):
     dict_ = defaultdict(type_)
     for k, v, in mapping.items():
         k = literal_eval(k)
         dict_[k] = v
+    return dict_
+
+def remap_stringkeys_transits(mapping, type_=float):
+    dict_ = defaultdict(type_)
+    for k, v, in mapping.items():
+        k = literal_eval(k)
+        llave = list(v.keys())[0]
+        valor = list(v.values())[0]
+        dict_[k] = {int(llave):int(valor)}
     return dict_
 
 

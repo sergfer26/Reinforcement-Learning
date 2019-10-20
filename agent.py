@@ -66,6 +66,7 @@ class AgentVI(BaseAgent):
         tgt_key = sum(transits.keys())
         count = sum(transits.values())
         reward = self.rewards[(key, action, tgt_key)]
+         #import pdb; pdb.set_trace()
         action_value = reward + self.gamma * self.values[tgt_key]
         return action_value
 
@@ -80,7 +81,7 @@ class AgentVI(BaseAgent):
                 best_action = action
             else:
                 pass
-            return best_action
+        return best_action
 
     def play_episode(self, env):
         total_reward = 0.0
