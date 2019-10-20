@@ -132,6 +132,6 @@ class Board(gym.Env):
                 reward = 1.0
             elif status == 2:
                 reward = -1.0
-        print('------------ turno de ', player, '------------')
-        self.show_board()
+        #print('------------ turno de ', player, '------------')
+        #self.show_board()
         return self.state, reward, self.done
