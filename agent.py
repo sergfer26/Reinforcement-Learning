@@ -16,6 +16,7 @@ class AgentVI(BaseAgent):
             Value table: state -> value.
         '''
         BaseAgent.__init__(self)
+        self.key = 0
         self.rewards = collections.defaultdict(float)
         self.transits = collections.defaultdict(collections.Counter)
         self.values = collections.defaultdict(float)
@@ -27,7 +28,7 @@ class AgentVI(BaseAgent):
             Actualiza las diccionarios asociados a
             las tablas de valores.
         '''
-        state = self.base10_to_state(self.key)
+        state = self.key_to_state(self.key)
         action = self.select_random_action(state)
         board_action = self.get_board_action(action, reflected, rots)
         new_state, reward, is_done = self.board.step(board_action, player)
@@ -103,11 +104,6 @@ class AgentVI(BaseAgent):
             key = new_key
             k += 1 
         return total_reward
-
-    def check_mark(self, action, state):
-        if state[action] == 0:
-            return True
-        return False
 
     def value_iteration(self):
         transits = list(self.transits.keys())
