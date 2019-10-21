@@ -9,8 +9,7 @@ if __name__ == '__main__':
     ref = False
     rots = 0
     players = ['X', 'O']
-    matrix = []
-    player.play_n_random_games(2000)
+    player.play_n_random_games(10000)
     dim = len(player.values)
     y = np.repeat(0, dim)
     epsilon = 0.01
@@ -21,13 +20,10 @@ if __name__ == '__main__':
             player.key = 0
             player.board.reset()
         x = np.array(list(player.values.values()))
-        matrix.append(x)
         i += 1
-        #if norma(x-y) < epsilon:
-        #    break
+        if norma(x-y) < epsilon:
+            break
         y = x
-    matrix = np.flip(matrix, axis=0)
-    matrix.reshape((i, dim))
 
     values = remap_keys(player.values)
     json.dump(values, open("qvalues.txt",'w'))

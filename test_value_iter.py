@@ -32,6 +32,8 @@ if __name__ == "__main__":
     json.dump(player.values, open("values.txt",'w'))
     json.dump(transits, open("transits.txt",'w'))
     json.dump(rewards, open("rewards.txt",'w'))
+
+    # d2 = json.load(open("text.txt"))
     
 
 

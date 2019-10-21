@@ -58,7 +58,7 @@ def is_rotated(state1, state2):
         state1 = rotate_right(state1)
     return False
 
-def state_to_base10(state):
+def state_to_key(state):
     '''
         transforma el vector de estados de base 3 a un número de base 10
     '''
@@ -67,7 +67,7 @@ def state_to_base10(state):
     base = np.power(vec, powers)
     return np.dot(base, state)
 
-def base10_to_state(num):
+def key_to_state(num):
     '''
         Pasa el número de base 10 al estado asociado
     '''

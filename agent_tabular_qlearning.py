@@ -56,9 +56,7 @@ class Agent_TQL(BaseAgent):
         new_state, reward, is_done = self.board.step(board_action, player)
         new_key = self.get_min_state(new_state)[0]
         [_, reflected, rots] = self.get_min_state(new_state)[1]
-        self.values[(self.key, action)] = 0
         self.key = self.reset_key if is_done else new_key
-        self.values[(self.key, action)] = 0
         return old_key, action, reward, new_key, reflected, rots, is_done
 
     def best_value_and_action(self, key):
@@ -78,7 +76,7 @@ class Agent_TQL(BaseAgent):
         if best_value:
             new_val = r + self.gamma * best_value - old_val
         else: 
-            new_val = r
+            new_val = - old_val
         self.values[(k, a)] = old_val  + self.alpha * new_val 
 
     def play_episode(self, board):
@@ -86,7 +84,7 @@ class Agent_TQL(BaseAgent):
         key = 0
         reflected = False
         rots = 0
-        self.board.reset()
+        board.reset()
         players = ['X', 'O']
         k = 0
         while True:

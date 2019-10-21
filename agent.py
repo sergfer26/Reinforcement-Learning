@@ -5,7 +5,7 @@ import collections
 
 class AgentVI(BaseAgent):
     '''
-        Agente base, sigue la política aleatoria
+        Agente base, 
     '''
   
     def __init__(self):
@@ -80,7 +80,7 @@ class AgentVI(BaseAgent):
                 best_action = action
             else:
                 pass
-            return best_action
+        return best_action
 
     def play_episode(self, env):
         total_reward = 0.0
