@@ -10,7 +10,7 @@ from numpy.linalg import norm as norma
 if __name__ == "__main__":
     player = avi()
     matrix = []
-    player.play_n_random_games(2000)
+    player.play_n_random_games(20000)
     dim = len(player.values)
     y = np.repeat(0, dim)
     epsilon = 0.01
@@ -35,8 +35,6 @@ if __name__ == "__main__":
 
     # d2 = json.load(open("text.txt"))
     
-
-
 
 
 

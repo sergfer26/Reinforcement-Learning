@@ -1,9 +1,8 @@
-from board import Board()
+from board import Board
 
 board = Board()
 PLAYERS = ['X', 'O']
-
-def duel(agent0, agent1):
+def duel(agent_X, agent_O, show=False):
     board.reset()
     done = False
     k = 0
@@ -13,14 +12,18 @@ def duel(agent0, agent1):
     while not done:
         player = PLAYERS[k % 2]
         if k % 2 == 0:
-            agent = agent0
-        else: 
-            agent = agent1
+            agent = agent_X
+        elif k % 2 != 0: 
+            agent = agent_O
+        if show:
+            print(reflected,rots)
+            board.show_board()
         action = agent.select_action(key)
         board_action = agent.get_board_action(action, reflected, rots)
         state, reward, done = board.step(board_action, player)
         key = agent.get_min_state(state)[0]
         [_, reflected, rots] = agent.get_min_state(state)[1]
-        
-    return board.is_game_over(key)
+        k +=1
+    board.show_board()
+    return board.is_game_over()
 
