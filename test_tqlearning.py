@@ -1,5 +1,5 @@
 from agent_tabular_qlearning import Agent_TQL as atql
-from base_agent import remap_keys
+import base_agent as ba
 import numpy as np 
 from numpy.linalg import norm as norma
 import json
@@ -9,21 +9,27 @@ if __name__ == '__main__':
     ref = False
     rots = 0
     players = ['X', 'O']
-    player.play_n_random_games(10000)
+    player.values = ba.remap_stringkeys_rewards(json.load(open("qvalues.txt")))
     dim = len(player.values)
     y = np.repeat(0, dim)
-    epsilon = 0.01
-    for i in range(10000):
+    epsilon = 0.001
+    i = 0
+    while True:
         k, a, r, nk, ref, rots, done = player.sample_env(ref, rots, players[i % 2])
         player.value_update(k, a, r, nk)
         if done: 
+            print('final')
+            print(player.values[(k, a)])
             player.key = 0
+            k = 0
+            nk = 0
             player.board.reset()
         x = np.array(list(player.values.values()))
-        i += 1
-        if norma(x-y) < epsilon:
+        i +=1
+        if i > 10000 and norma(x-y) < epsilon:
             break
         y = x
+    print(i)
 
-    values = remap_keys(player.values)
-    json.dump(values, open("qvalues.txt",'w'))
+    values = ba.remap_keys(player.values)
+    json.dump(values, open("qvalues_trained.txt",'w'))
