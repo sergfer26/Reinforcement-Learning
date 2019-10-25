@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
-from base_agent import BaseAgent
-from board import TicTacToe as ttt
+from base_agent import BaseAgent   
+from ast import literal_eval
+from collections import Counter
+import operator
+import json
 import numpy as np
 
-PLAYERS = ['X', 'O']
-
-def diff(first, second):
-    '''
-    Obtiene la diferencia de elementos entre dos listas.
-    :param first: lista de la que se obtendra la diferencia.
-    :param second: lista que sacará la diferencia.
-    :return: first - second
-    '''
-    second = set(second)
-    return [item for item in first if item not in second]
+REWARDS = json.load(open('rewards.txt'))
 
 
 class MinMax_Agent(BaseAgent):
@@ -26,43 +19,51 @@ class MinMax_Agent(BaseAgent):
         Constructor
         '''
         BaseAgent.__init__(self)
-        self.test_board = ttt()
+        self.rewards = {literal_eval(k): v for k, v in REWARDS.items()}
 
-    def minmax(self, state, player, mark):
-        self.test_board.state = state
-        self.test_board.state_to_items() 
-        best = np.inf
-        if player == -1:
-            [mark] = diff(PLAYERS, [mark])
-            best = -best
+    def select_action(self, state):
+        transitions = {k: v for k, v in self.rewards.items() if k[0] == state}
+        k, a, nk = max(transitions.items(), key=operator.itemgetter(1))[0]
+        print(self.rewards[(k, a, nk)])
+        return a
 
-        status = self.test_board.is_game_over()
-        if status > -1:
-            if status == 0:
-                return [None, 0]
-            if status == 2:
-                return [None, -1]
-            else: 
-                return [None, 1]
+    def get_unique_states(self, transitions, position):
+        return set(map(lambda x: x[position], transitions))
 
-        empty_spots = [i for i, e in enumerate(state) if e == 0]
-        for action in empty_spots:
-            self.test_board.mark_(action, player)
-            self.test_board.items_to_state()
-            new_state = self.test_board.state
-            [a, reward] = self.minmax(new_state, -player, mark)
-            if player == -1:
-                if reward > best:
-                    best = reward
-                    best_action = a
-            else:
-                if reward < best:
-                    best = reward
-                    best_action = a
-        return [best_action, best]
+    def check_turn(self, state):
+        state_representation = self.key_to_state(state)
+        c = Counter(state_representation)
+        if c[1] == c[2]:
+            return 'X'
+        else:
+            return 'O'
 
-    def move(self)
+    def minmax(self):
+        rewards = self.rewards
+        keys = list(self.get_unique_states(rewards.keys(), 2) - 
+                    self.get_unique_states(rewards.keys(), 0))
+        visited = []
+        while keys:
+            s = keys.pop(0)
 
+            sns = [(sn, rn) for (sn, an, sn_plus_1), rn in rewards.items() if s == sn_plus_1]
+            assert all(_r == sns[0][1] for _s, _r in sns)
 
+            for sn, rn in sns:
+                for sm, am, sm_plus_1 in rewards.keys():
+                    if sm_plus_1 == sn:
+                        rm = rewards[(sm, am, sm_plus_1)]
+                        turn = self.check_turn(sm)
+                        if turn == 'X':
+                            f = min
+                        else:
+                            f = max
+                        rewards[(sm, am, sm_plus_1)] = f(rm, rn)
+                        aux = [s] + keys + visited
+                        if sn not in aux:
+                            keys.append(sn)
+
+            visited.append(s)
+        self.rewards = rewards
 
 
