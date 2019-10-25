@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from board import Board as ttt
-from agent import AgentVI as avi
+from agent_value_iteration import AgentVI as avi
 from base_agent import remap_keys
 from collections import Counter
 import numpy as np
@@ -10,7 +10,7 @@ from numpy.linalg import norm as norma
 if __name__ == "__main__":
     player = avi()
     matrix = []
-    player.play_n_random_games(20000)
+    player.play_n_random_games(2000)
     dim = len(player.values)
     y = np.repeat(0, dim)
     epsilon = 0.01
@@ -26,15 +26,14 @@ if __name__ == "__main__":
     matrix = np.flip(matrix, axis=0)
     matrix.reshape((i, dim))
 
-    transits = remap_keys(player.transits, Counter)
     rewards = remap_keys(player.rewards)
-    
     json.dump(player.values, open("values.txt",'w'))
-    json.dump(transits, open("transits.txt",'w'))
     json.dump(rewards, open("rewards.txt",'w'))
 
     # d2 = json.load(open("text.txt"))
     
+
+
 
 
 
