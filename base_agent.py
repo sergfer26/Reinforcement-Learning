@@ -2,40 +2,30 @@
 from board import Board
 import collections
 from collections import defaultdict
-from ast import literal_eval 
-
+from ast import literal_eval
 import numpy as np
 
-PLAYERS = ['X', 'O']
+
+def remap_keys(mapping, type_=float):
+    dic = defaultdict(type_) 
+    for k, v in mapping.items():
+        dic[str(k)] = v
+    return dic
 
 
-def diff(first, second):
-    second = set(second)
-    return [item for item in first if item not in second]
-
-
-def remap_keys(mapping, type_=float): 
-    dict_ = defaultdict(type_) 
-    for k, v in mapping.items(): 
-        dict_[str(k)] = v 
-    return dict_
-
-
-def remap_stringkeys_rewards(mapping, type_=float):
-    dict_ = defaultdict(type_)
-    for k, v, in mapping.items():
+def remap_stringkeys(mapping, type_=float):
+    dic = defaultdict(type_)
+    for k, v in mapping.items():
         k = literal_eval(k)
-        dict_[k] = v
-    return dict_
+        dic[k] = v
+    return dic
 
-def remap_stringkeys_transits(mapping, type_=float):
-    dict_ = defaultdict(type_)
-    for k, v, in mapping.items():
-        k = literal_eval(k)
-        llave = list(v.keys())[0]
-        valor = list(v.values())[0]
-        dict_[k] = {int(llave):int(valor)}
-    return dict_
+
+def remap_values(mapping, type_=float):
+    dic = defaultdict(type_)
+    for k, v in mapping.items():
+        dic[k] = -v
+    return dic
 
 
 class BaseAgent:
@@ -48,6 +38,7 @@ class BaseAgent:
         '''
         Establece el tablero del jugador y su llave inicial.
         '''
+        self.wins = 0
         self.board = Board()
         self.key = 0
 
@@ -62,7 +53,8 @@ class BaseAgent:
             if state[action] == 0:
                 return action
 
-    def state_to_matrix(self, state):
+    @staticmethod
+    def state_to_matrix(state):
         '''
         Transforma el estado a una matriz.
         - Param (state): estado que es un arreglo de 1x9.
@@ -72,13 +64,14 @@ class BaseAgent:
         # the size of the input array
         return np.reshape(state, (-1, 3))
 
-    def rotate_right(self, state):
+    @staticmethod
+    def rotate_right(state):
         '''
         Rota el tablero físico 45º en sentido horario. 
         - Param (state): estado que es un arreglo de 1x9.
         - Regresa (state): estado que es un arreglo de 1x9.
         '''
-        mat = self.state_to_matrix(state)
+        mat = BaseAgent.state_to_matrix(state)
         aux = np.zeros((3, 3), dtype=int)
         aux[:, 2] = mat[0, ]
         aux[:, 1] = mat[1, ]
@@ -86,13 +79,14 @@ class BaseAgent:
         state = aux.reshape(-1, 9)[0, ]
         return list(state)
 
-    def rotate_left(self, state):
+    @staticmethod
+    def rotate_left(state):
         '''
         Rota el tablero físico 45º en sentido anti horario. 
         - Param (state): estado que es un arreglo de 1x9.
         - Regresa (state): estado que es un arreglo de 1x9.
         '''
-        mat = self.state_to_matrix(state)
+        mat = BaseAgent.state_to_matrix(state)
         aux = np.zeros((3, 3), dtype=int)
         aux[0, ] = mat[:, 2]
         aux[1, ] = mat[:, 1]
@@ -100,7 +94,8 @@ class BaseAgent:
         state = aux.reshape(-1, 9)[0, ]
         return list(state)
 
-    def reflect_h(self, state):
+    @staticmethod
+    def reflect_h(state):
         '''
         Refleja el tablero físico de forma horizontal. 
         - Param (state): estado que es un arreglo de 1x9.
@@ -113,13 +108,14 @@ class BaseAgent:
         state = np.concatenate((c, aux), axis=None)
         return list(state)
 
-    def reflect_v(self, state):
+    @staticmethod
+    def reflect_v(state):
         '''
-        Refleja el tablero físico de forma vertical. 
+        Refleja el tablero físico de forma vertical.
         - Param (state): estado que es un arreglo de 1x9.
         - Regresa (state): estado que es un arreglo de 1x9.
         '''
-        mat = self.state_to_matrix(state)
+        mat = BaseAgent.state_to_matrix(state)
         aux = np.zeros((3, 3), dtype=int)
         aux[:, 0] = mat[:, 2]
         aux[:, 1] = mat[:, 1]
@@ -127,36 +123,39 @@ class BaseAgent:
         state = aux.reshape(-1, 9)[0, ]
         return list(state)
 
-    def state_equal(self, state1, state2):
+    @staticmethod
+    def state_equal(state1, state2):
         '''
         Verifica si dos estados son equivalentes bajo rotación o
         reflexión. 
         - Param (state1, state2): estados que son arreglos de 1x9.
         - Regresa (bool): condición de equivalencia
         '''
-        if self.is_rotated(state1, state2):
+        if BaseAgent.is_rotated(state1, state2):
             return True
         else:
-            state1 = self.reflect_h(state1)
-            if self.is_rotated(state1, state2):
+            state1 = BaseAgent.reflect_h(state1)
+            if BaseAgent.is_rotated(state1, state2):
                 return True
         return False
 
-    def is_rotated(self, state1, state2):
+    @staticmethod
+    def is_rotated(state1, state2):
         '''
-        Verifica si dos estados son equivalentes bajo rotación. 
+        Verifica si dos estados son equivalentes bajo rotación.
         - Param (state1, state2): estados que son arreglos de 1x9.
         - Regresa (bool): condición de equivalencia
         '''
-        for i in range(4):
+        for _ in range(4):
             if np.array_equal(state1, state2):
                 return True
-            state1 = self.rotate_right(state1)
+            state1 = BaseAgent.rotate_right(state1)
         return False
 
-    def state_to_key(self, state):
+    @staticmethod
+    def state_to_key(state):
         '''
-        Transforma el vector de estados de base 3 a un número de 
+        Transforma el vector de estados de base 3 a un número de
         base 10.
         - Param (state): estado en base 3.
         - Regresa (num): valor en base 10.
@@ -166,7 +165,8 @@ class BaseAgent:
         base = np.power(vec, powers)
         return int(np.dot(base, state))
 
-    def key_to_state(self, num):
+    @staticmethod
+    def key_to_state(num):
         '''
         Transforma un número de base 10 a uno en base 3.
         - Param (num): número en base 10.
@@ -183,8 +183,9 @@ class BaseAgent:
         digits.reverse()
         state = np.array(digits)
         return list(state)
- 
-    def get_min_state(self, state):
+
+    @staticmethod
+    def get_min_state(state):
         '''
         Calcula todos los estados equivalentes y regresa la pareja
         (state, key) donde key es el valor mínimo de números en base 10
@@ -192,10 +193,11 @@ class BaseAgent:
         - Param (state): arreglo asociado al tablero 1x9.
         - Regresa (state, key): elemtos mínimos del grupo de estados.
         '''
-        states = self.get_all_states(state)
+        states = BaseAgent.get_all_states(state)
         return min(states.items())
 
-    def get_all_states(self, state):
+    @staticmethod
+    def get_all_states(state):
         '''
         Obtiene todos los estados equivalentes a un estado dado
         y los pone en un diccionario donde la llave (key) es el valor
@@ -205,23 +207,24 @@ class BaseAgent:
         - Regresa (dict): diccionario con todos los estados.
         '''
         states = collections.defaultdict(list)
-        key = self.state_to_key(state)
+        key = BaseAgent.state_to_key(state)
         reflected = False
-        states[key] = [state, reflected, 0] 
+        states[key] = [state, reflected, 0]
         new_state = state
-        for j in range(2):
+        for _ in range(2):
             for i in range(3):
-                new_state = self.rotate_right(new_state)
-                new_key = self.state_to_key(new_state)
+                new_state = BaseAgent.rotate_right(new_state)
+                new_key = BaseAgent.state_to_key(new_state)
                 states[new_key] = [new_state, reflected, i+1]
             if not reflected:
                 reflected = True
-                new_state = self.reflect_h(state)
-                new_key = self.state_to_key(new_state)
+                new_state = BaseAgent.reflect_h(state)
+                new_key = BaseAgent.state_to_key(new_state)
                 states[new_key] = [new_state, reflected, 0]
         return states
 
-    def get_board_action(self, action, ref, rots):
+    @staticmethod
+    def get_board_action(action, ref, rots):
         '''
         Obtiene la acción de cualqueir juego a partir del juego mínimo,
         considera las rotaciones y reflexión del juego real.
@@ -233,11 +236,11 @@ class BaseAgent:
         actions = [0, 1, 2, 3, 4, 5, 6, 7, 8]
         if ref:
             if rots % 2 == 0:
-                actions = self.reflect_h(actions)
+                actions = BaseAgent.reflect_h(actions)
             else:
-                actions = self.reflect_v(actions)
+                actions = BaseAgent.reflect_v(actions)
         for _ in range(0, rots):
-            actions = self.rotate_left(actions)
+            actions = BaseAgent.rotate_left(actions)
         return actions.index(action)
 
     def reset_key(self):
@@ -256,24 +259,6 @@ class BaseAgent:
         - Regresa (ref, rots): reflexión y rotaciones.
         '''
         return False, 0
-    
-   # def explore_env(self):
-   #     key = self.key
-   #     self.board.reset()
-   #     k = 0
-   #     while True: 
-   #         player = PLAYERS[k % 2]
-   #         state = self.key_to_state(key)
-   #         self.board.state = state
-   #         self.board.state_to_items()
-   #         actions = [a for a, e in enumerate(state) if e == 0]
-   #         for action in actions:
-   #             self.board.mark_(action, player)
-   #             state = self.board.state
-                
 
-                
-
-
-
-
+    def get_step_info(self, key, action, reward, new_key):
+        pass
