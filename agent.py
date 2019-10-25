@@ -20,7 +20,6 @@ class AgentVI(BaseAgent):
         self.rewards = collections.defaultdict(float)
         self.transits = collections.defaultdict(collections.Counter)
         self.values = collections.defaultdict(float)
-        self.turns = collections.defaultdict(float)
         self.gamma = 0.5
     
     def update_dicts(self, reflected, rots, player, k):
@@ -46,7 +45,6 @@ class AgentVI(BaseAgent):
             estados posibles.
         '''
         self.values[self.key] = 0
-        self.turns[self.key] = 0
         ref = False
         rots = 0
         plyrs = ['X', 'O']
@@ -66,7 +64,6 @@ class AgentVI(BaseAgent):
         tgt_key = sum(transits.keys())
         count = sum(transits.values())
         reward = self.rewards[(key, action, tgt_key)]
-         #import pdb; pdb.set_trace()
         action_value = reward + self.gamma * self.values[tgt_key]
         return action_value
 
