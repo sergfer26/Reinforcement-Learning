@@ -24,7 +24,6 @@ class MinMax_Agent(BaseAgent):
     def select_action(self, state):
         transitions = {k: v for k, v in self.rewards.items() if k[0] == state}
         k, a, nk = max(transitions.items(), key=operator.itemgetter(1))[0]
-        print(self.rewards[(k, a, nk)])
         return a
 
     def get_unique_states(self, transitions, position):
