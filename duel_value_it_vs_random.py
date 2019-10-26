@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
 from duel import duel
 from board import Board
-from agent import AgentVI
+from agent_value_iteration import AgentVI as avi
 import json
 from human import Human
 from minmax_agent import MinMax_Agent as mma
-from base_agent import remap_stringkeys_rewards, remap_stringkeys_transits
+from base_agent import remap_stringkeys
+player_X = avi()
 
-player_X = AgentVI()
-
-player_X.transits = remap_stringkeys_transits(json.load(open("transits.txt")))
-player_X.rewards = remap_stringkeys_rewards(json.load(open("rewards.txt")))
-player_X.values = remap_stringkeys_rewards(json.load(open("values.txt")))
-
-player_X = mma()
-player_X.rewards = remap_stringkeys_rewards(json.load(open("rewards.txt")))
-player_X.minmax()
+player_X.rewards = remap_stringkeys(json.load(open("rewards.txt")))
+player_X.values = remap_stringkeys(json.load(open("values.txt")))
 
 player_O = Human()
 
