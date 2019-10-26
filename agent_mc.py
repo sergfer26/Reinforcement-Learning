@@ -2,8 +2,10 @@
 from base_agent import BaseAgent
 from agent_value_iteration import AgentVI
 import collections
+import numpy as np
 
 GAMMA = 0.5
+EPSILON = 0.5
 
 
 class AgentMC(AgentVI):
@@ -19,23 +21,31 @@ class AgentMC(AgentVI):
     def reset_episode(self):
         self.episode['states'].clear()
         self.episode['actions'] = []
-            
+    
     def select_action(self, key):
-        best_action, best_value, = None, None
         key_action = list(self.rewards.keys())
         actions = [a for k, a, nk in key_action if k == key]
-        for action in actions:
-            action_value = self.calc_action_value(key, action)
-            if best_value is None or best_value < action_value:
-                best_value = action_value
-                best_action = action
-            else:
-                pass
-        return best_action
+        A_s = len(actions)
+        p = EPSILON/A_s
+        bernoulli = np.random.binomial(1, p)
+        if bernoulli == 1:
+            print('Accion Aleatoria!')
+            action = np.random.choice(actions)
+            return action
+        else:
+            best_action, best_value, = None, None
+            for action in actions:
+                action_value = self.calc_action_value(key, action)
+                if best_value is None or best_value < action_value:
+                    best_value = action_value
+                    best_action = action
+                else:
+                    pass
+            return best_action
 
-    def value_update_mc(self, episode):
-        states = episode['states']
-        actions = episode['actions']
+    def value_update_mc(self):
+        states = list(self.episode['states'])
+        actions = self.episode['actions']
         states.reverse()
         actions.reverse()
         tkey = states.pop(0)
@@ -43,6 +53,7 @@ class AgentMC(AgentVI):
         a = actions[0]
         self.values[tkey] = self.rewards[(key, a, tkey)]
         for key, action in zip(states, actions):
+            self.transits[key] += 1
             N = self.transits[key]
             old_val = self.values[key]
             val = self.calc_action_value(key, action)
@@ -81,6 +92,11 @@ class AgentMC(AgentVI):
         if key != 0:
             self.episode['states'].add(new_key)
             self.episode['actions'].append(action) 
+        state = self.key_to_state(new_key)
+        self.board.state = state
+        if self.board.is_game_over() > -1:
+            self.value_update_mc()
+            self.board.reset()
 
 
 if __name__ == "__main__":
