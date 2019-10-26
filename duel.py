@@ -24,7 +24,7 @@ def duel(agent_X, agent_O, show=False):
 
         if show:
             board.show_board()
-
+        # import pdb; pdb.set_trace()
         if isinstance(agent, human):
             action = agent.select_action(key, ref, rots)
             board_action = action
