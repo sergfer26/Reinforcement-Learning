@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 from base_agent import BaseAgent
 import collections
+import numpy as np
 
 ALPHA = 0.5
 GAMMA = 0.5
+EPSILON = 0.4
 
 
 class Agent_TQL(BaseAgent):
@@ -81,7 +83,16 @@ class Agent_TQL(BaseAgent):
         self.values[(k, a)] = old_val + ALPHA * new_val 
 
     def select_action(self, key):
-        _, a = self.best_value_and_action(key)
+        values = list(self.values.keys())
+        actions = [a for k, a in values if key == k]
+        A_s = len(actions)
+        p = EPSILON/A_s
+        bernoulli = np.random.binomial(1, p)
+        if bernoulli == 1:
+            print('Accion Aleatoria!')
+            a = np.random.choice(actions)
+        else:
+            _, a = self.best_value_and_action(key)
         return a
 
     def play_episode(self, board):
