@@ -41,6 +41,7 @@ class BaseAgent:
         self.wins = 0
         self.board = Board()
         self.key = 0
+        self.role = 'X'
 
     def select_random_action(self, state):
         '''
