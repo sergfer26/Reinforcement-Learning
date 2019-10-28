@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
-from base_agent import BaseAgent
-from agent_value_iteration import AgentVI
 import collections
 import numpy as np
+from .base_agent import BaseAgent
+from .agent_value_iteration import AgentVI
+from .read_tables import REWARDS, VALUES, remap_values
 
 GAMMA = 0.5
 EPSILON = 0.5
+
+
+def create_amc(): 
+    agent = AgentMC()
+    agent.rewards = REWARDS
+    agent.values = VALUES
+    return agent
 
 
 class AgentMC(AgentVI):

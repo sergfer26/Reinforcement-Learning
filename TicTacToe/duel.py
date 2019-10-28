@@ -1,10 +1,13 @@
-from board import Board
-from human import Human as human
+#!/usr/bin/env python3
+from .board import Board as board
+from .human import Human as human
 import json
+import numpy as np
+import pandas as pd
 
-board = Board()
+
+board = board()
 PLAYERS = ['X', 'O']
-rewards = json.load(open('rewards.txt'))
 
 
 def duel(agent_X, agent_O, show=False):
@@ -37,10 +40,31 @@ def duel(agent_X, agent_O, show=False):
         [_, ref, rots] = agent.get_min_state(new_state)[1]
         k += 1
         agent_X.get_step_info(key, action, reward, new_key)
-        agent_O.get_step_info(key, action, -reward, new_key)
+        agent_O.get_step_info(key, action, reward, new_key)
         key = new_key
+    
+    if show:
+        board.show_board()
 
-    board.show_board()
     return board.is_game_over()
 
-    # def do_n_duels(n, agent_X, agent_O):
+
+def play_n_duels(games, agent1, agent2, show=False):
+    playerX = agent1
+    playerO = agent2
+    prob = []
+    for k in range(1, games+1):
+        winner_value = duel(playerX, playerO, show)
+        if winner_value == 2:
+            playerO.wins += 1
+            aux = playerX
+            playerX = playerO
+            playerO = aux
+            playerX.set_role('X')
+            playerO.set_role('O')
+        elif winner_value == 1:
+            playerX.wins += 1
+            
+        prob.append(agent1.wins/k)
+
+    return prob

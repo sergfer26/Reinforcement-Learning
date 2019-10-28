@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-from base_agent import BaseAgent 
+from .base_agent import BaseAgent
 from ast import literal_eval
 from collections import Counter
 import operator
 import json
 import numpy as np
-
-REWARDS = json.load(open('rewards.txt'))
-REWARDS = {literal_eval(k): v for k, v in REWARDS.items()}
+from .read_tables import REWARDS
 
 
 class MinMax_Agent(BaseAgent):
@@ -28,6 +26,7 @@ class MinMax_Agent(BaseAgent):
             rewards = self.rewardsX
         else:
             rewards = self.rewardsO
+            
         transitions = {k: v for k, v in rewards.items() if k[0] == state}
         _, a, _ = max(transitions.items(), key=operator.itemgetter(1))[0]
         return a
@@ -48,7 +47,7 @@ class MinMax_Agent(BaseAgent):
 
     def minmax(self, X=True):
         rewards = REWARDS
-        if not X: 
+        if not X:
             rewards = self.get_rewards_for_O()
 
         keys = list(self.get_unique_states(rewards.keys(), 2) - 
@@ -82,5 +81,3 @@ class MinMax_Agent(BaseAgent):
 
             visited.append(s)
         return rewards
-
-

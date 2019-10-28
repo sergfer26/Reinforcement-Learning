@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from base_agent import BaseAgent
+from .base_agent import BaseAgent
 
 
 class Human(BaseAgent):

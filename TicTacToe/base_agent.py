@@ -1,31 +1,8 @@
 #!/usr/bin/env python3
-from board import Board
 import collections
 from collections import defaultdict
-from ast import literal_eval
 import numpy as np
-
-
-def remap_keys(mapping, type_=float):
-    dic = defaultdict(type_)
-    for k, v in mapping.items():
-        dic[str(k)] = v
-    return dic
-
-
-def remap_stringkeys(mapping, type_=float):
-    dic = defaultdict(type_)
-    for k, v in mapping.items():
-        k = literal_eval(k)
-        dic[k] = v
-    return dic
-
-
-def remap_values(mapping, type_=float):
-    dic = defaultdict(type_)
-    for k, v in mapping.items():
-        dic[k] = -v
-    return dic
+from .board import Board
 
 
 class BaseAgent:
@@ -263,3 +240,6 @@ class BaseAgent:
 
     def get_step_info(self, key, action, reward, new_key):
         pass
+
+    def set_role(self, role):
+        self.role = role

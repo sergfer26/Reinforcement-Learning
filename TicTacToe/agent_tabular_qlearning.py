@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
-from base_agent import BaseAgent, remap_stringkeys, remap_keys
+from .base_agent import BaseAgent
+from .read_tables import QVALUES, remap_stringkeys, remap_keys, remap_values
 import collections
 import numpy as np
 from numpy.linalg import norm as norma
 import json
-
+import os
 
 ALPHA = 0.5
 GAMMA = 0.5
 EPSILON = 0.4
+
+
+def create_atql():
+    agent = Agent_TQL()
+    agent.values = QVALUES
+    return agent
 
 
 class Agent_TQL(BaseAgent):
@@ -95,8 +102,14 @@ class Agent_TQL(BaseAgent):
             print('Accion Aleatoria!')
             a = np.random.choice(actions)
         else:
-            _, a = self.best_value_and_action(key)
-        return a
+            values = map(lambda a: self.values[(key, a)], actions) 
+            values = list(values)
+            if all(values == 0 for v in values):
+                a = np.random.choice(actions)
+            else:
+                index = values.index(max(values))
+                a = actions[index]
+        return a      
 
     def play_episode(self, board):
         total_reward = 0.0
@@ -120,7 +133,15 @@ class Agent_TQL(BaseAgent):
         return total_reward
 
     def get_step_info(self, key, action, reward, new_key):
+        if self.role == 'X':
+            pass
+        else: 
+            reward = -reward
         self.value_update(key, action, reward, new_key)
+
+    def set_role(self, role):
+        self.role = role
+        self.values = remap_values(self.values)
 
 
 if __name__ == '__main__':
@@ -128,7 +149,7 @@ if __name__ == '__main__':
     ref = False
     rots = 0
     players = ['X', 'O']
-    player.values = remap_stringkeys(json.load(open("qvalues.txt")))
+    player.values = QVALUES
     dim = len(player.values)
     y = np.repeat(0, dim)
     epsilon = 0.001
@@ -151,4 +172,4 @@ if __name__ == '__main__':
     print(i)
 
     values = remap_keys(player.values)
-    json.dump(values, open("qvalues_trained.txt", 'w'))
+    json.dump(values, open("trained/qvalues.txt", 'w'))

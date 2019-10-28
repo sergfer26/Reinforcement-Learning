@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-from base_agent import BaseAgent, remap_stringkeys
+from .base_agent import BaseAgent
+from .read_tables import REWARDS, TVALUES, remap_stringkeys, remap_keys
+from .read_tables import remap_values
 import collections
 import json
-from base_agent import remap_keys
 from collections import Counter
 import numpy as np
 from numpy.linalg import norm as norma
@@ -12,10 +13,10 @@ GAMMA = 0.5
 
 
 def create_avi():
-    player_X = AgentVI()
-    player_X.rewards = remap_stringkeys(json.load(open("rewards.txt")))
-    player_X.values = remap_stringkeys(json.load(open("trained_values.txt")))
-    return player_X
+    agent = AgentVI()
+    agent.rewards = REWARDS
+    agent.values = TVALUES
+    return agent
 
 
 class AgentVI(BaseAgent):
@@ -128,12 +129,18 @@ class AgentVI(BaseAgent):
                 state_vals.append(self.calc_action_value(key, action))  
             self.values[key] = max(state_vals) if len(state_vals) else val
 
+    def set_role(self, role):
+        self.role = role
+        self.reawards = remap_values(self.rewards)
+        self.values = remap_values(self.values)
+
 
 if __name__ == "__main__":
 
     player = AgentVI()
     matrix = []
     player.play_n_random_games(10000)
+    json.dump(player.values, open("tables/values.txt", 'w'))
     dim = len(player.values)
     y = np.repeat(0, dim)
     epsilon = 0.001
@@ -149,6 +156,6 @@ if __name__ == "__main__":
     matrix = np.flip(matrix, axis=0)
     matrix.reshape((i, dim))
     rewards = remap_keys(player.rewards)
-    json.dump(player.values, open("trained_values.txt", 'w'))
-    json.dump(rewards, open("rewards.txt", 'w'))
+    json.dump(player.values, open("tables/trained_values.txt", 'w'))
+    json.dump(rewards, open("tables/rewards.txt", 'w'))
     # d2 = json.load(open("text.txt"))
