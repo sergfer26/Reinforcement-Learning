@@ -2,6 +2,11 @@
 from base_agent import BaseAgent, remap_stringkeys
 import collections
 import json
+from base_agent import remap_keys
+from collections import Counter
+import numpy as np
+from numpy.linalg import norm as norma
+
 
 GAMMA = 0.5
 
@@ -9,7 +14,7 @@ GAMMA = 0.5
 def create_avi():
     player_X = AgentVI()
     player_X.rewards = remap_stringkeys(json.load(open("rewards.txt")))
-    player_X.values = remap_stringkeys(json.load(open("values.txt")))
+    player_X.values = remap_stringkeys(json.load(open("trained_values.txt")))
     return player_X
 
 
@@ -67,7 +72,13 @@ class AgentVI(BaseAgent):
 
     def calc_action_value(self, key, action):
         rewards = self.rewards.keys() 
-        tgt_key = [nk for k, a, nk in rewards if k == key and a == action][0]
+        lista = [nk for k, a, nk in rewards if k == key and a == action]
+        if lista:
+            tgt_key = lista[0]
+        else:
+            print(action)
+            print(self.key_to_state(key))
+
         reward = self.rewards[(key, action, tgt_key)]
         action_value = reward + GAMMA * self.values[tgt_key]
         return action_value
@@ -117,3 +128,27 @@ class AgentVI(BaseAgent):
                 state_vals.append(self.calc_action_value(key, action))  
             self.values[key] = max(state_vals) if len(state_vals) else val
 
+
+if __name__ == "__main__":
+
+    player = AgentVI()
+    matrix = []
+    player.play_n_random_games(10000)
+    dim = len(player.values)
+    y = np.repeat(0, dim)
+    epsilon = 0.001
+    i = 0
+    while True:
+        player.value_iteration()
+        x = np.array(list(player.values.values()))
+        matrix.append(x)
+        i += 1
+        if norma(x-y) < epsilon:
+            break
+        y = x
+    matrix = np.flip(matrix, axis=0)
+    matrix.reshape((i, dim))
+    rewards = remap_keys(player.rewards)
+    json.dump(player.values, open("trained_values.txt", 'w'))
+    json.dump(rewards, open("rewards.txt", 'w'))
+    # d2 = json.load(open("text.txt"))
