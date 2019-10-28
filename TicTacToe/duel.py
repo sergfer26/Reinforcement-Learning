@@ -63,8 +63,8 @@ def play_n_duels(games, agent1, agent2, show=False):
             playerX.set_role('X')
             playerO.set_role('O')
         elif winner_value == 1:
-            playerX.wins += 1
-            
-        prob.append(agent1.wins/k)
+            playerX.wins += 1 
 
-    return prob
+        prob.append(agent1.wins)
+
+    return np.array(prob)/games
