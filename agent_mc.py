@@ -16,10 +16,10 @@ class AgentMC(AgentVI):
     def __init__(self):
         AgentVI.__init__(self)
         self.transits = collections.defaultdict(int)
-        self.episode = {'states': set(), 'actions': []}
+        self.episode = {'states': [], 'actions': []}
 
     def reset_episode(self):
-        self.episode['states'].clear()
+        self.episode['states'] = []
         self.episode['actions'] = []
     
     def select_action(self, key):
@@ -33,18 +33,25 @@ class AgentMC(AgentVI):
             action = np.random.choice(actions)
             return action
         else:
-            best_action, best_value, = None, None
-            for action in actions:
-                action_value = self.calc_action_value(key, action)
-                if best_value is None or best_value < action_value:
-                    best_value = action_value
-                    best_action = action
-                else:
-                    pass
+            # best_action, best_value, = None, None
+            values = map(lambda a: self.calc_action_value(key, a), actions) 
+            values = list(values)
+            if all(values == 0 for v in values):
+                best_action = np.random.choice(actions)
+            else:
+                index = values.index(max(values))
+                best_action = actions[index]
+            # for action in actions:
+            #     action_value = self.calc_action_value(key, action)
+            #     if best_value is None or best_value < action_value:
+            #         best_value = action_value
+            #         best_action = action
+            #     else:
+            #         pass
             return best_action
 
     def value_update_mc(self):
-        states = list(self.episode['states'])
+        states = self.episode['states']
         actions = self.episode['actions']
         states.reverse()
         actions.reverse()
@@ -72,7 +79,7 @@ class AgentMC(AgentVI):
         players = ['X', 'O']
         while True:
             self.transits[key] += 1
-            self.episode['states'].add(key)
+            self.episode['states'].append(key)
             action = self.select_action(key)
             self.episode['actions'].append(action)
             board_action = self.get_board_action(action, reflected, rots)
@@ -84,17 +91,17 @@ class AgentMC(AgentVI):
             if is_done:
                 break
             k += 1 
-        self.episode['states'].add(new_key)
+        self.episode['states'].append(new_key)
         return episode
 
     def get_step_info(self, key, action, reward, new_key):
-        self.episode['states'].add(key)
-        if key != 0:
-            self.episode['states'].add(new_key)
-            self.episode['actions'].append(action) 
+        self.episode['states'].append(key)
+        self.episode['actions'].append(action) 
         state = self.key_to_state(new_key)
         self.board.state = state
+        self.board.state_to_items()
         if self.board.is_game_over() > -1:
+            self.episode['states'].append(new_key)
             self.value_update_mc()
             self.board.reset()
 
