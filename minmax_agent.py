@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from base_agent import BaseAgent   
+from base_agent import BaseAgent 
 from ast import literal_eval
 from collections import Counter
 import operator
@@ -36,8 +36,11 @@ class MinMax_Agent(BaseAgent):
             return 'X'
         else:
             return 'O'
+    
+    def get_rewards_for_O(self):
+        self.rewards = {k: -v for k, v in self.rewards.items() if k[0] != 0}
 
-    def minmax(self):
+    def minmax(self, X=True):
         rewards = self.rewards
         keys = list(self.get_unique_states(rewards.keys(), 2) - 
                     self.get_unique_states(rewards.keys(), 0))
@@ -53,10 +56,16 @@ class MinMax_Agent(BaseAgent):
                     if sm_plus_1 == sn:
                         rm = rewards[(sm, am, sm_plus_1)]
                         turn = self.check_turn(sm)
-                        if turn == 'X':
-                            f = min
+                        if X:
+                            if turn == 'X':
+                                f = min
+                            else:
+                                f = max
                         else:
-                            f = max
+                            if turn == 'X':
+                                f = max
+                            else:
+                                f = min
                         rewards[(sm, am, sm_plus_1)] = f(rm, rn)
                         aux = [s] + keys + visited
                         if sn not in aux:
