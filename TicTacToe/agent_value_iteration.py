@@ -97,28 +97,6 @@ class AgentVI(BaseAgent):
                 pass
         return best_action
 
-    def play_episode(self, env):
-        total_reward = 0.0
-        env.reset()
-        key = 0
-        k = 0 
-        reflected = False
-        rots = 0
-        players = ['X', 'O']
-        while True:
-            action = self.select_action(key)
-            board_action = self.get_board_action(action, reflected, rots)
-            new_state, reward, is_done = env.step(board_action, players[k % 2])
-            new_key = self.get_min_state(new_state)[0]
-            [_, reflected, rots] = self.get_min_state(new_state)[1]
-            self.rewards[(key, action, new_key)] = reward
-            total_reward += reward
-            if is_done:
-                break
-            key = new_key
-            k += 1 
-        return total_reward
-
     def value_iteration(self):
         rewards = list(self.rewards.keys())
         for key, _, _ in rewards: 

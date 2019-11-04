@@ -13,21 +13,19 @@ PLAYERS = ['X', 'O']
 def duel(agent_X, agent_O, show=False):
     board.reset()
     done = False
-    k = 0
+    i = 0
     key = 0
     ref = False
     rots = 0
     while not done:
-        player = PLAYERS[k % 2]
-
-        if k % 2 == 0:
+        player = PLAYERS[i % 2]
+        if i % 2 == 0:
             agent = agent_X
-        elif k % 2 != 0:
+        elif i % 2 != 0:
             agent = agent_O
 
         if show:
             board.show_board()
-        # import pdb; pdb.set_trace()
         if isinstance(agent, human):
             action = agent.select_action(key, ref, rots)
             board_action = action
@@ -38,7 +36,7 @@ def duel(agent_X, agent_O, show=False):
         new_state, reward, done = board.step(board_action, player)
         new_key = agent.get_min_state(new_state)[0]
         [_, ref, rots] = agent.get_min_state(new_state)[1]
-        k += 1
+        i += 1
         agent_X.get_step_info(key, action, reward, new_key)
         agent_O.get_step_info(key, action, reward, new_key)
         key = new_key
@@ -65,6 +63,6 @@ def play_n_duels(games, agent1, agent2, show=False):
         elif winner_value == 1:
             playerX.wins += 1 
 
-        prob.append(agent1.wins)
+        prob.append(agent2.wins)
 
     return np.array(prob)/games
