@@ -7,9 +7,8 @@ from numpy.linalg import norm as norma
 import json
 import os
 
-ALPHA = 0.5
-GAMMA = 0.5
-EPSILON = 0.4
+self.alpha = 0.5
+self.gamma = 0.5
 
 
 def create_atql():
@@ -26,6 +25,7 @@ class Agent_TQL(BaseAgent):
     def __init__(self):
         BaseAgent.__init__(self)
         self.values = collections.defaultdict(float) 
+        self.self.epsilon = 0.1
 
     def update_dicts(self, reflected, rots, player, k):
         '''
@@ -75,16 +75,16 @@ class Agent_TQL(BaseAgent):
         best_value, _ = self.best_value_and_action(nk)
         old_val = self.values[(k, a)]
         if best_value:
-            new_val = r + GAMMA * best_value - old_val
+            new_val = r + self.gamma * best_value - old_val
         else: 
             new_val = r - old_val
-        self.values[(k, a)] = old_val + ALPHA * new_val
+        self.values[(k, a)] = old_val + self.alpha * new_val
 
     def select_action(self, key):
         values = list(self.values.keys())
         actions = [a for k, a in values if key == k]
         A_s = len(actions)
-        p = EPSILON/A_s
+        p = self.epsilon/A_s
         bernoulli = np.random.binomial(1, p)
         if bernoulli == 1:
             # print('Accion Aleatoria!')
@@ -107,8 +107,9 @@ class Agent_TQL(BaseAgent):
         self.value_update(key, action, reward, new_key)
 
     def set_role(self, role):
-        self.role = role
-        self.values = remap_values(self.values)
+        if role != self.role:
+            self.role = role
+            self.values = remap_values(self.values)
 
 
 if __name__ == '__main__':
@@ -119,7 +120,7 @@ if __name__ == '__main__':
     player.values = QVALUES
     dim = len(player.values)
     y = np.repeat(0, dim)
-    epsilon = 0.001
+    self.epsilon = 0.001
     i = 0
     while True:
         k, a, r, nk, ref, rots, done = player.sample_env(ref, rots, players[i % 2])
@@ -133,7 +134,7 @@ if __name__ == '__main__':
             player.board.reset()
         x = np.array(list(player.values.values()))
         i += 1
-        if i > 10000 and norma(x-y) < epsilon:
+        if i > 10000 and norma(x-y) < self.epsilon:
             break
         y = x
     print(i)

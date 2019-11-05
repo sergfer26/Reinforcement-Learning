@@ -51,6 +51,7 @@ def play_n_duels(games, agent1, agent2, show=False):
     playerX = agent1
     playerO = agent2
     prob = []
+    draws = 0
     for k in range(1, games+1):
         winner_value = duel(playerX, playerO, show)
         if winner_value == 2:
@@ -62,7 +63,10 @@ def play_n_duels(games, agent1, agent2, show=False):
             playerO.set_role('O')
         elif winner_value == 1:
             playerX.wins += 1 
+        elif winner_value == 0:
+            draws += 1 
 
-        prob.append(agent2.wins)
+        if k % 100 == 0:
+            prob.append(agent2.wins/k)
 
-    return np.array(prob)/games
+    return np.array(prob)

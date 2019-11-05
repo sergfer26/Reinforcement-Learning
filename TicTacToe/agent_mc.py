@@ -5,11 +5,15 @@ from .base_agent import BaseAgent
 from .agent_value_iteration import AgentVI
 from .read_tables import REWARDS, VALUES, remap_values
 
-GAMMA = 0.5
-EPSILON = 0.5
+self.gamma = 0.5
 
 
-def create_amc(): 
+def create_amc():
+    '''
+    Crea una instancia de AgentMC con los REWARDS y VALUES
+    ya identificados.
+    Regresa (agent): instancia
+    '''
     agent = AgentMC()
     agent.rewards = REWARDS
     agent.values = VALUES
@@ -25,6 +29,7 @@ class AgentMC(AgentVI):
         AgentVI.__init__(self)
         self.transits = collections.defaultdict(int)
         self.episode = {'states': [], 'actions': []}
+        self.self.epsilon = 0.2
 
     def reset_episode(self):
         self.episode['states'] = []
@@ -34,7 +39,7 @@ class AgentMC(AgentVI):
         key_action = list(self.rewards.keys())
         actions = [a for k, a, nk in key_action if k == key]
         A_s = len(actions)
-        p = EPSILON/A_s
+        p = self.epsilon/A_s
         bernoulli = np.random.binomial(1, p)
         if bernoulli == 1:
             action = np.random.choice(actions)

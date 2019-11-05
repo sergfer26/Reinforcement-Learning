@@ -1,32 +1,52 @@
 from .agent_tabular_qlearning import Agent_TQL
 from .read_tables import QVALUES
 
-ALPHA = 0.5
-GAMMA = 0.5
-EPSILON = 0.4
+self.alpha = 0.5
+
+
+def create_asarsa():
+    agent = Agent_SARSA()
+    agent.values = QVALUES
+    return agent
 
 
 class Agent_SARSA(Agent_TQL):
 
     def __init__(self):
-        BaseAgent.__init__(self)
-        self.SARSA = {'actions': [], 'states': [], 'reward': 0}
+        Agent_TQL.__init__(self)
+        self.SAR = {'state': 0, 'action': 0, 'reward': 0}
+        self.gamma = 0.5
+        self.epsilon = 0.4
 
-    def reset_SARSA(self):
-        self.SARSA = {'actions': [], 'states': [], 'reward': 0}
+    def reset_SAR(self):
+        self.SAR = {'state': 0, 'action': 0, 'reward': 0}
 
     def get_step_info(self, key, action, reward, new_key):
         if self.role == 'X':
             pass
         else: 
             reward = -reward
-        if 
-            self.value_update(key, action, reward, new_key, new_action)
+
+        if key != 0:
+            na = action
+            s = self.SAR['state']
+            a = self.SAR['action']
+            r = self.SAR['reward']
+            ns = key
+            self.value_update(s, a, r, ns, na)
+
+        self.SAR['state'] = key
+        self.SAR['action'] = action
+        self.SAR['reward'] = reward
+
+        if reward != 0:
+            self.reset_SAR()
+            self.value_update(ns, na, reward, None, None)
 
     def value_update(self, s, a, r, ns, na):
         old_val = self.values[(s, a)]
         if na:
-            new_val = r + GAMMA * self.values[(ns, na)] - old_val
+            new_val = r + self.gamma * self.values[(ns, na)] - old_val
         else:
             new_val = r - old_val
-        self.values[(s, a)] = old_val + ALPHA * new_val
+        self.values[(s, a)] = old_val + self.alpha * new_val

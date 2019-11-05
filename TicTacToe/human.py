@@ -14,7 +14,7 @@ class Human(BaseAgent):
             else: 
                 state = self.reflect_v(state)
         actions = [i for i, e in enumerate(state) if e == 0]
-        print(actions)
+        # print(actions)
         action = int(input('Tu jugada es: '))
         return action
 

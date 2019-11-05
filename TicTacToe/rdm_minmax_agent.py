@@ -2,7 +2,7 @@ from .minmax_agent import MinMax_Agent
 import numpy as np
 import operator
 
-EPSILON = 0.5
+self.epsilon = 0.5
 
 
 class Rdm_MinMax_Agent(MinMax_Agent):
@@ -14,7 +14,7 @@ class Rdm_MinMax_Agent(MinMax_Agent):
         state = self.key_to_state(key)
         actions = [a for a in state if a == 0]
         A_s = len(actions)
-        p = EPSILON/A_s
+        p = self.epsilon/A_s
         bernoulli = np.random.binomial(1, p)
         if self.role == 'X':
             rewards = self.rewardsX

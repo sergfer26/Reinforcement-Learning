@@ -9,7 +9,7 @@ import numpy as np
 from numpy.linalg import norm as norma
 
 
-GAMMA = 0.5
+self.gamma = 0.5
 
 
 def create_avi():
@@ -81,7 +81,7 @@ class AgentVI(BaseAgent):
             print(self.key_to_state(key))
 
         reward = self.rewards[(key, action, tgt_key)]
-        action_value = reward + GAMMA * self.values[tgt_key]
+        action_value = reward + self.gamma * self.values[tgt_key]
         return action_value
 
     def select_action(self, key):
@@ -108,9 +108,10 @@ class AgentVI(BaseAgent):
             self.values[key] = max(state_vals) if len(state_vals) else val
 
     def set_role(self, role):
-        self.role = role
-        self.reawards = remap_values(self.rewards)
-        self.values = remap_values(self.values)
+        if role != self.role:
+            self.role = role
+            self.reawards = remap_values(self.rewards)
+            self.values = remap_values(self.values)
 
 
 if __name__ == "__main__":
@@ -121,14 +122,14 @@ if __name__ == "__main__":
     json.dump(player.values, open("tables/values.txt", 'w'))
     dim = len(player.values)
     y = np.repeat(0, dim)
-    epsilon = 0.001
+    self.epsilon = 0.001
     i = 0
     while True:
         player.value_iteration()
         x = np.array(list(player.values.values()))
         matrix.append(x)
         i += 1
-        if norma(x-y) < epsilon:
+        if norma(x-y) < self.epsilon:
             break
         y = x
     matrix = np.flip(matrix, axis=0)
