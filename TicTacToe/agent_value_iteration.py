@@ -9,9 +9,6 @@ import numpy as np
 from numpy.linalg import norm as norma
 
 
-self.gamma = 0.5
-
-
 def create_avi():
     agent = AgentVI()
     agent.rewards = REWARDS
@@ -35,6 +32,7 @@ class AgentVI(BaseAgent):
         self.key = 0
         self.rewards = collections.defaultdict(float)
         self.values = collections.defaultdict(float)
+        self.gamma = 0.5
     
     def update_dicts(self, reflected, rots, player, k):
         '''

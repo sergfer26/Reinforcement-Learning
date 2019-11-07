@@ -5,8 +5,6 @@ from .base_agent import BaseAgent
 from .agent_value_iteration import AgentVI
 from .read_tables import REWARDS, VALUES, remap_values
 
-self.gamma = 0.5
-
 
 def create_amc():
     '''
@@ -30,6 +28,7 @@ class AgentMC(AgentVI):
         self.transits = collections.defaultdict(int)
         self.episode = {'states': [], 'actions': []}
         self.self.epsilon = 0.2
+        self.gamma = 0.5
 
     def reset_episode(self):
         self.episode['states'] = []

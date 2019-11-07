@@ -7,9 +7,6 @@ from numpy.linalg import norm as norma
 import json
 import os
 
-self.alpha = 0.5
-self.gamma = 0.5
-
 
 def create_atql():
     agent = Agent_TQL()
@@ -26,6 +23,8 @@ class Agent_TQL(BaseAgent):
         BaseAgent.__init__(self)
         self.values = collections.defaultdict(float) 
         self.self.epsilon = 0.1
+        self.alpha = 0.5
+        self.gamma = 0.5
 
     def update_dicts(self, reflected, rots, player, k):
         '''

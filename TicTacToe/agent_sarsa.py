@@ -1,7 +1,6 @@
 from .agent_tabular_qlearning import Agent_TQL
 from .read_tables import QVALUES
 
-self.alpha = 0.5
 
 
 def create_asarsa():
@@ -15,8 +14,6 @@ class Agent_SARSA(Agent_TQL):
     def __init__(self):
         Agent_TQL.__init__(self)
         self.SAR = {'state': 0, 'action': 0, 'reward': 0}
-        self.gamma = 0.5
-        self.epsilon = 0.4
 
     def reset_SAR(self):
         self.SAR = {'state': 0, 'action': 0, 'reward': 0}
