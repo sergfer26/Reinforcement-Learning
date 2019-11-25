@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import collections
-from collections import defaultdict
+from collections import defaultdict, Counter
 import numpy as np
+from numpy.random import choice
 from .board import Board
 
 
@@ -20,17 +21,17 @@ class BaseAgent:
         self.key = 0
         self.role = 'X'
 
-    def select_random_action(self, state):
+    def select_random_action(self, key):
         '''
         Selecciona una acción aleatoria legal en el tablero.
         :Param (state): estado/acomodo de un tablero.
         :Regresa (action): acción/posición que se tomo. 
         '''
-        while True:
-            action = self.board.action_space.sample()
-            if state[action] == 0:
-                return action
-
+        state = self.key_to_state(key)
+        actions = [i for i, e in enumerate(state) if e == 0]
+        action = choice(actions)
+        return action
+       
     @staticmethod
     def state_to_matrix(state):
         '''
@@ -243,3 +244,11 @@ class BaseAgent:
 
     def set_role(self, role):
         self.role = role
+
+    def check_turn(self, state):
+        state_representation = self.key_to_state(state)
+        c = Counter(state_representation)
+        if c[1] == c[2]:
+            return 'X'
+        else:
+            return 'O'
