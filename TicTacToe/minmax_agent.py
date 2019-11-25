@@ -33,14 +33,6 @@ class MinMax_Agent(BaseAgent):
 
     def get_unique_states(self, transitions, position):
         return set(map(lambda x: x[position], transitions))
-
-    def check_turn(self, state):
-        state_representation = self.key_to_state(state)
-        c = Counter(state_representation)
-        if c[1] == c[2]:
-            return 'X'
-        else:
-            return 'O'
    
     def get_rewards_for_O(self):
         return {k: -v for k, v in REWARDS.items() if k[0] != 0}
