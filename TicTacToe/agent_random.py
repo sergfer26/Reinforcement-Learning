@@ -3,10 +3,10 @@ from .base_agent import BaseAgent
 from numpy.random import choice
 
 
-class Random(BaseAgent):
+class RandomAgent(BaseAgent):
+
+    def __init__(self):
+        BaseAgent.__init__(self)
 
     def select_action(self, key):
-        state = self.key_to_state(key)
-        actions = [i for i, e in enumerate(state) if e == 0]
-        action = choice(actions)
-        return action
+        return self.select_random_action(key)
