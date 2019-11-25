@@ -69,42 +69,6 @@ class Board(gym.Env):
         else:
             return -1
 
-    def is_final(self):
-        items = self.items
-        if (items[0] == items[1] == items[2]) and items[2] != '' :
-            print(1)
-            return True
-        elif (items[3] == items[4] == items[5]) and items[5] != '' :
-            print(2)
-            return True
-        elif (items[6] == items[7] == items[8]) and items[8] != '' :
-            print(3)
-            return True
-        elif (items[0] == items[3] == items[6]) and items[6] != '' :
-            print(4)
-            return True
-        elif (items[1] == items[4] == items[7]) and items[7] != '' :
-            print(5)
-            return True
-        elif (items[2] == items[5] == items[8]) and items[8] != '' :
-            print(6)
-            return True
-        elif (items[0] == items[4] == items[8]) and items[8] != '' :
-            print(7)
-            return True
-        elif (items[2] == items[4] == items[6]) and items[6] != '' :
-            print(8)
-            return True
-        elif (items[2] == items[4] == items[6]) and items[6] != '' :
-            print(9)
-            return True
-        else:
-            for i in items:
-                if i == '':
-                    return False
-            else: 
-                return True
-
     def is_game_over(self):
         '''
             Regresa el status del juego.
@@ -166,6 +130,4 @@ class Board(gym.Env):
                 reward = 1.0
             elif status == 2:
                 reward = -1.0
-        #print('------------ turno de ', player, '------------')
-        #self.show_board()
         return self.state, reward, self.done
