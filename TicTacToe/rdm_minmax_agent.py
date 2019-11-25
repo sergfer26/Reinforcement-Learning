@@ -2,13 +2,12 @@ from .minmax_agent import MinMax_Agent
 import numpy as np
 import operator
 
-self.epsilon = 0.5
-
 
 class Rdm_MinMax_Agent(MinMax_Agent):
 
     def __init__(self):
         MinMax_Agent.__init__(self)
+        self.epsilon = 0.5
 
     def select_action(self, key):
         state = self.key_to_state(key)
