@@ -21,7 +21,7 @@ def create_avi():
 
 class AgentVI(BaseAgent):
     '''
-    Agente base, 
+    Agente basado en el método de value iteration, 
     '''
   
     def __init__(self):
@@ -37,51 +37,6 @@ class AgentVI(BaseAgent):
         self.values = collections.defaultdict(float)
         self.transits = collections.defaultdict(collections.Counter)
         self.gamma = 0.5
-
-    def play_random_episode(self, show=False):
-        self.board.reset()
-        done = False
-        i = 0
-        ref = False
-        rots = 0
-        self.values[self.key] = 0
-        old_action = None
-        old_key = None
-
-        while not done:
-            self.set_role(PLAYERS[i % 2])
-
-            if show:
-                self.board.show_board()
-                
-            action = self.select_random_action(self.key)
-            board_action = self.get_board_action(action, ref, rots)
-            new_state, reward, done = self.board.step(board_action, self.role)
-            new_key = self.get_min_state(new_state)[0]
-            [_, ref, rots] = self.get_min_state(new_state)[1]
-            i += 1
-
-            if self.role == 'X':
-                reward = - reward
-
-            if self.key != 0:
-                self.rewards[(old_key, old_action, new_key)] = reward
-                self.transits[(old_key, old_action)][new_key] += 1
-
-            reward = -reward
-            self.values[new_key] = 0
-            old_key = self.key
-            old_action = action
-            self.key = new_key
-
-        self.rewards[(old_key, old_action, None)] = reward
-        self.transits[(old_key, old_action)][None] += 1
-        self.board.reset()
-        self.key = self.reset_key()
-
-    def play_n_random_games(self, n):
-        for _ in range(n):
-            self.play_random_episode()
 
     def calc_action_value(self, key, action):
         target_counts = self.transits[(key, action)]
