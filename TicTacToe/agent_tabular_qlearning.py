@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from .base_agent import BaseAgent
-from .read_tables import remap_stringkeys, remap_keys, remap_values
 import collections
 import numpy as np
 import json
