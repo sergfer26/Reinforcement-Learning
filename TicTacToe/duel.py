@@ -1,22 +1,33 @@
 #!/usr/bin/env python3
+from torch.utils.tensorboard import SummaryWriter
 from .board import Board as board
 from .human import Human as human
+from .base_agent import BaseAgent
 import json
 import numpy as np
 import pandas as pd
 
 
-def duel(playerX, playerO, show=False, board=board()):
+def get_turn(state):
+    role = BaseAgent.check_turn(state)
+    if role == 'X':
+        return 0
+    else:
+        return 1
+
+
+def duel(playerX, playerO, show=False, board=board(), old_key=None, old_action=None):
     playerX.role = 'X'
     playerO.role = 'O'
     done = False
-    i = 0
-    key = 0
-    ref = False
-    rots = 0
-    old_key = None
-    old_action = None
-    player = playerX
+    state = board.state
+    key = BaseAgent.get_min_state(state)[0]
+    [_, ref, rots] = BaseAgent.get_min_state(state)[1]
+    i = get_turn(key)
+    if i ==0:
+        player = playerX
+    else:
+        player = playerO
     while True:
         if show:
             board.show_board()
@@ -62,6 +73,7 @@ def duel(playerX, playerO, show=False, board=board()):
 
 
 def play_n_duels(games, agent1, agent2, show=False):
+    writer = SummaryWriter()
     playerX = agent1
     playerO = agent2
     frec = []
@@ -73,14 +85,13 @@ def play_n_duels(games, agent1, agent2, show=False):
             aux = playerX
             playerX = playerO
             playerO = aux
-            playerX.role = 'X'
-            playerO.role = 'O'
         elif winner_value == 1:
             playerX.wins += 1 
         elif winner_value == 0:
             draws += 1 
 
         if k % 100 == 0:
+            writer.add_scalar('Juegos no perdidos', (agent2.wins+draws)/k, k)
             frec.append((agent2.wins+draws)/k)
-
+        
     return np.array(frec)
