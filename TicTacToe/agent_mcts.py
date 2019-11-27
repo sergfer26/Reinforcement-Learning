@@ -1,134 +1,215 @@
 #!/usr/bin/env python3
 from .base_agent import BaseAgent
 from .read_tables import remap_stringkeys, remap_keys, remap_values
-from .base_agent import BaseAgent
+from .agent_mc import AgentMC
 from .agent_random import RandomAgent
 from .duel import duel
+from .board import Board 
 import collections
 import numpy as np
 import json
 import operator
 
 
-class AgentMCTS(BaseAgent):
+class AgentMCTS(AgentMC):
+    '''
+    Agente basado en el método de MCTS/UTC
+    '''
 
     def __init__(self):
-        BaseAgent.__init__(self)
-        self.values = collections.defaultdict(float)
-        self.transits = collections.defaultdict(collections.Counter)
-        self.episode = {'states': []}
+        AgentMC.__init__(self)
         self.C = 1.0
-        self.N = 0
+        self.N = 0 # simulaciones
         self.trainer = RandomAgent()
-        self.training = False
+        self.simulating = False
+        self.not_leafs = [0]
 
     def reset_episode(self):
+        '''
+        Reinicia el episodio
+        '''
         self.episode['states'] = []
         self.episode['actions'] = []
 
-    def get_total_transits(self, key):
-        state = self.key_to_state(key)
-        actions = [a for a, e in enumerate(state) if e == 0]
-        n = 0
-        for action in actions: 
-            target_counts = self.transits[(key, action)]
-            n += sum(target_counts.values())
-        
-        return n
-
     def calc_ucb1(self, key):
+        '''
+        Calcula el valor de ucb1
+        '''
         value = np.Inf
         n = self.get_total_transits(key)
         if n != 0:
-            value = self.values[key] + np.sqrt(2*np.log(self.N)/n)
+            value = self.values[key] + self.C*np.sqrt(2*np.log(self.N)/n)
         return value
 
     def is_node_leaf(self, key):
-        if self.transits[key]:
+        '''
+        Determina si un estado es hoja
+        '''
+        if key not in self.not_leafs:
             return False
         else: 
             return True
+    
+    def get_other_role(self):
+        '''
+        Obtiene el rol del oponennte
+        '''
+        role = list(set(['X', 'O']) - set(self.role))
+        return role[0]
 
-    def backpropagation(self, reward):
-        states = self.episode['states']
-        states.reverse()
-        for key in states:
-            n = self.get_total_transits(key)
-            if n != 0:
-                old_val = self.values[key]
-                val = reward
-                self.values[key] = ((n-1) * old_val + val)/n
-
-        self.reset_episode()
-
-    def rollout(self, key):
-        self.training = True
-        state = self.key_to_state(key)
-        self.board.state = state
+    def get_next_state(self, old_key, action):
+        '''
+        Regresa los posibles estados, depués de que tiro el
+        oponente.
+        '''
+        old_state = self.key_to_state(old_key)
+        self.board.state = old_state
         self.board.state_to_items()
-        if self.role == 'X':
-            duel(self, self.trainer, show=False, board=self.board)
-        else:
-            duel(self.trainer, self, show=False, board=self.board)
+        state, _, _ = self.board.step(action, self.role)
+        actions = [a for a, e in enumerate(state) if e == 0]
+        states = dict()
+        for a in actions:
+            ns, _, _ = self.board.step(a, self.get_other_role())
+            new_key = self.get_min_state(ns)[0]
+            [_, ref, rots] = self.get_min_state(ns)[1]
+            states[new_key] = [ref, rots]
+            self.board.state = state
+            self.board.state_to_items()
 
         self.board.reset()
-        self.training = False
+        return states
 
-    def expansion(self, key):
+    def select_action(self, key):
+        '''
+        Cuando no se esta simulando usa la política greedy y
+        cuando se esta simulando ocupa la política aleatoria,
+        en ambos casos se realiza el MCTS antes de toamar una 
+        acción
+        '''
+        if self.simulating:
+            return self.select_random_action(key)
+
+        self.MCTS(key)
         state = self.key_to_state(key)
         actions = [a for a, e in enumerate(state) if e == 0]
-        for action in actions:
-            s, _, _ = self.board(action, self.role)
-            self.board.reset()
-            new_key = self.get_min_state(s)[0]
-            self.transits[key][new_key] = 0
-                
-        childs = list(self.transits[key].keys())
-        child = childs[0]
-        self.rollout(child)
+        action = self.get_best_action(key, actions)
 
-    def select_action(self, current):
+        return action
+
+    def MCTS(self, key):
+        self.selection(key)
+    
+    def selection(self, current):
+        '''
+        Fase de selección
+        '''
         state = self.key_to_state(current)
+        self.board.state = state
+        self.board.state_to_items()
+        if self.board.is_game_over() > -1:
+            self.board.reset()
+            return
+        self.board.reset()
         actions = [a for a, e in enumerate(state) if e == 0]
-
-        if self.training:
-            return self.select_random_action(current)
-
-        best_action = None
         self.N += 1
-        self.episode['states'].append(current)
         if self.is_node_leaf(current):
             value = self.calc_ucb1(current)
             if value == np.Inf:
-                self.rollout(current)
-            else: 
+                self.rollout(None, None, current)
+            else:
                 self.expansion(current)
         else:
             best_child = None
             best_value = - np.Inf
+            best_action = None
             for action in actions:
-                self.board.state = state
-                self.board.state_to_items()
-                s, _, _ = self.board(action, self.role)
-                self.board.reset()
-                new_key = self.get_min_state(s)[0]
-                value = self.calc_ucb1(new_key)
-                if best_value < value:
-                    best_child = new_key
+                states = self.get_next_state(current, action)
+                list_states = list(states.keys())
+                values = list(map(lambda k: self.calc_ucb1(k), list_states))
+                if not values:
+                    self.reset_episode()
+                    return
+                if best_value < max(values):
+                    index = values.index(max(values))
+                    best_child = list_states[index]
                     best_action = action
-                    best_value = value
+                    best_value = max(values)
 
+            self.episode['states'].append(current)
+            self.episode['actions'].append(best_action)
             self.transits[(current, best_action)][best_child] += 1
-            self.select_action(best_child)
-        if not best_action:
-            best_action = actions[0]
 
-        return best_action
+            self.selection(best_child)
+
+    def expansion(self, key):
+        '''
+        Fase de expansión del árbol
+        '''
+        state = self.key_to_state(key)
+        actions = [a for a, e in enumerate(state) if e == 0]
+        childs = list()
+        i = 0
+        for action in actions:
+            states = self.get_next_state(key, action)
+            list_states = list(states.keys())
+            if i == 0:
+                aux = states
+
+            map(lambda nk: self.not_leafs.append(nk), list_states)
+            childs += list_states
+            i += 1
+
+        action = actions[0]
+        child = childs[0]
+        [ref, rots] = aux[child]
+        self.transits[(key, action)][child] += 1
+        self.episode['states'].append(key)
+        self.episode['actions'].append(action)
+        self.rollout(key, action, child)
+
+    def rollout(self, key, action, child, ref=False, rots=0):
+        '''
+        Es la parte de simulación
+        '''
+        board = Board()
+        self.simulating = True
+        state = self.key_to_state(child)
+        board.state = state
+        board.state_to_items()
+        if self.role == 'X':
+            duel(self, self.trainer, show=False, board=board, old_key=key, old_action=action)
+        else:
+            duel(self.trainer, self, show=False, board=board, old_key=key, old_action=action)
+
+        self.simulating = False
+    
+    def backpropagation(self, reward):
+        '''
+        Actualiza la información después de terminar un episodio.
+        '''
+        states = self.episode['states']
+        actions = self.episode['actions']
+        states.reverse()
+        actions.reverse()
+        i = 0
+        for key, action in zip(states, actions):
+            n = self.get_transits(key, action)
+            M = self.get_total_transits(key)
+            old_val = self.values[key]
+            old_qval = self.qvalues[(key, action)]
+            self.values[key] = ((M-1) * old_val + (self.gamma**i)*reward)/M
+            self.qvalues[(key, action)] = ((n-1) * old_qval + (self.gamma**i)*reward)/n
+            i += 1
+
+        self.reset_episode()
     
     def get_step_info(self, key, action, reward, new_key):
+        '''
+        Obtiene información del ambiente, se usa en duels
+        '''
         self.episode['states'].append(key)
-        if self.transits[(key, action)][new_key]:
-            self.transits[(key, action)][new_key] += 1
+        self.episode['actions'].append(action)
+        self.transits[(key, action)][new_key] += 1
         if not new_key:
             self.backpropagation(reward)
             self.board.reset()
