@@ -222,6 +222,15 @@ class BaseAgent:
             actions = BaseAgent.rotate_left(actions)
         return actions.index(action)
 
+    @staticmethod
+    def check_turn(key):
+        state_representation = BaseAgent.key_to_state(key)
+        c = Counter(state_representation)
+        if c[1] == c[2]:
+            return 'X'
+        else:
+            return 'O'
+
     def reset_key(self):
         '''
         Establece las condiciones iniciales del tablero y
@@ -244,11 +253,3 @@ class BaseAgent:
 
     def set_role(self, role):
         self.role = role
-
-    def check_turn(self, state):
-        state_representation = self.key_to_state(state)
-        c = Counter(state_representation)
-        if c[1] == c[2]:
-            return 'X'
-        else:
-            return 'O'
