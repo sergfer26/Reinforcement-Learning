@@ -39,6 +39,10 @@ class AgentVI(BaseAgent):
         self.gamma = 0.5
 
     def calc_action_value(self, key, action):
+        '''
+        Calcula el valor de la acción dado que se esta en
+        un estado, es la función v
+        '''
         target_counts = self.transits[(key, action)]
         total = sum(target_counts.values())
         action_value = 0.0
@@ -50,6 +54,9 @@ class AgentVI(BaseAgent):
         return action_value
 
     def select_action(self, key):
+        '''
+        Selecciona la mejor acción, política greedy
+        '''
         best_action, best_value, = None, None
         state = self.key_to_state(key)
         actions = [a for a, e in enumerate(state) if e == 0]
@@ -63,6 +70,9 @@ class AgentVI(BaseAgent):
         return best_action
 
     def value_iteration(self):
+        '''
+        Actualiza los valores asociados a los estados
+        '''
         rewards = list(self.rewards.keys())
         for key, _, _ in rewards: 
             state_vals = []
@@ -74,6 +84,9 @@ class AgentVI(BaseAgent):
             self.values[key] = max(state_vals) if len(state_vals) else val
 
     def get_step_info(self, key, action, reward, new_key):
+        '''
+        Obtiene información del ambiente, se usa en duels
+        '''
         self.transits[(key, action)][new_key] += 1
         self.rewards[(key, action, new_key)] = reward
         
