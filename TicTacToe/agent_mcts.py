@@ -4,7 +4,7 @@ from .read_tables import remap_stringkeys, remap_keys, remap_values
 from .agent_mc import AgentMC
 from .agent_random import RandomAgent
 from .duel import duel
-from .board import Board 
+from .board import Board
 import collections
 import numpy as np
 import json
@@ -183,7 +183,7 @@ class AgentMCTS(AgentMC):
 
         self.simulating = False
     
-    def backpropagation(self, reward):
+    def backpropagation(self, r):
         '''
         Actualiza la información después de terminar un episodio.
         '''
@@ -192,13 +192,13 @@ class AgentMCTS(AgentMC):
         states.reverse()
         actions.reverse()
         i = 0
-        for key, action in zip(states, actions):
-            n = self.get_transits(key, action)
+        for key, a in zip(states, actions):
+            n = self.get_transits(key, a)
             M = self.get_total_transits(key)
             old_val = self.values[key]
-            old_qval = self.qvalues[(key, action)]
-            self.values[key] = ((M-1) * old_val + (self.gamma**i)*reward)/M
-            self.qvalues[(key, action)] = ((n-1) * old_qval + (self.gamma**i)*reward)/n
+            old_qval = self.qvalues[(key, a)]
+            self.values[key] = ((M-1) * old_val + (self.gamma**i)*r)/M
+            self.qvalues[(key, a)] = ((n-1) * old_qval + (self.gamma**i)*r)/n
             i += 1
 
         self.reset_episode()
