@@ -18,10 +18,17 @@ class AgentMC(AgentVI):
         self.qvalues = collections.defaultdict(float)
 
     def reset_episode(self):
+        '''
+        Reinicia el episodio
+        '''
         self.episode['states'] = []
         self.episode['actions'] = []
 
     def get_best_action(self, key, actions):
+        '''
+        Obtine la mejor acción posible dado que se esta en un estado,
+        compara los valores de q.
+        '''
         qvals = list(map(lambda a: self.qvalues[(key, a)], actions))
         if all(qvals == 0 for v in qvals):
             best_action = np.random.choice(actions)
@@ -31,6 +38,10 @@ class AgentMC(AgentVI):
         return best_action
 
     def select_action(self, key):
+        '''
+        Selecciona una acción dado que se esta en un estado, 
+        sigue la política e-greedy.
+        '''
         state = self.key_to_state(key)
         actions = [a for a, e in enumerate(state) if e == 0]
         A_s = len(actions)
@@ -44,33 +55,46 @@ class AgentMC(AgentVI):
         return action
     
     def get_transits(self, key, action):
+        '''
+        Obtiene la catidad de veces que se ha pasado por un (estado, acción)
+        '''
         target_counts = self.transits[(key, action)]
         return sum(target_counts.values())
 
     def get_total_transits(self, key):
+        '''
+        Obtiene la catidad de veces que se ha pasado por un estado
+        '''
         state = self.key_to_state(key)
         actions = [a for a, e in enumerate(state) if e == 0]
         transits = list(map(lambda a: self.get_transits(key, a), actions))
         return sum(transits)
 
-    def backpropagation(self, reward):
+    def backpropagation(self, r):
+        '''
+        Al llegar a los estados terminales, la función actualiza las tablas 
+        con la información aprendida
+        '''
         states = self.episode['states']
         actions = self.episode['actions']
         states.reverse()
         actions.reverse()
         i = 0
-        for key, action in zip(states, actions):
-            n = self.get_transits(key, action)
+        for key, a in zip(states, actions):
+            n = self.get_transits(key, a)
             N = self.get_total_transits(key)
             old_val = self.values[key]
-            old_qval = self.qvalues[(key, action)]
-            self.values[key] = ((N-1) * old_val + (self.gamma**i)*reward)/N
-            self.qvalues[(key, action)] = ((n-1) * old_qval + (self.gamma**i)*reward)/n
+            old_qval = self.qvalues[(key, a)]
+            self.values[key] = ((N-1) * old_val + (self.gamma**i)*r)/N
+            self.qvalues[(key, a)] = ((n-1) * old_qval + (self.gamma**i)*r)/n
             i += 1
 
         self.reset_episode()
 
     def get_step_info(self, key, action, reward, new_key):
+        '''
+        Obtiene información del ambiente, se usa en duels
+        '''
         self.episode['states'].append(key)
         self.episode['actions'].append(action)
         self.transits[(key, action)][new_key] += 1
