@@ -17,6 +17,9 @@ def get_turn(state):
 
 
 def duel(playerX, playerO, show=False, board=board(), old_key=None, old_action=None):
+    '''
+    Realiza una partida entre dos jugadores
+    '''
     playerX.role = 'X'
     playerO.role = 'O'
     done = False
@@ -24,7 +27,7 @@ def duel(playerX, playerO, show=False, board=board(), old_key=None, old_action=N
     key = BaseAgent.get_min_state(state)[0]
     [_, ref, rots] = BaseAgent.get_min_state(state)[1]
     i = get_turn(key)
-    if i ==0:
+    if i == 0:
         player = playerX
     else:
         player = playerO
@@ -73,6 +76,10 @@ def duel(playerX, playerO, show=False, board=board(), old_key=None, old_action=N
 
 
 def play_n_duels(games, agent1, agent2, show=False):
+    '''
+    Realiza n partidas entre dos jugadores y mide el rendimiento 
+    del segundo.
+    '''
     writer = SummaryWriter()
     playerX = agent1
     playerO = agent2
