@@ -3,6 +3,10 @@ from .base_agent import BaseAgent
 
 
 class Human(BaseAgent):
+    '''
+    Clase diseñada para que el usuario pueda 
+    jugar contra los agentes entrenados.
+    '''
 
     def select_action(self, key, ref, rots):
         state = self.key_to_state(key)
