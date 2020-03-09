@@ -18,6 +18,7 @@ def create_avi():
     #agent.values = TVALUES
     return agent
 
+import pdb; pdb.set_trace()
 
 class AgentVI(BaseAgent):
     '''
