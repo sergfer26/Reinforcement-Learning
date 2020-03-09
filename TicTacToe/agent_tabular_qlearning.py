@@ -14,6 +14,7 @@ class Agent_TQL(BaseAgent):
     def __init__(self):
         BaseAgent.__init__(self)
         self.values = collections.defaultdict(float) 
+        self.qvalues = collections.defaultdict(float) 
         self.epsilon = 0.1
         self.alpha = 0.5
         self.gamma = 0.5
@@ -25,7 +26,7 @@ class Agent_TQL(BaseAgent):
             state = self.key_to_state(key)
             actions = [a for a, e in enumerate(state) if e == 0]
             for action in actions:
-                action_value = self.values[(key, action)]
+                action_value = self.qvalues[(key, action)]
                 if best_value is None or best_value < action_value:
                     best_value = action_value
                     best_action = action
@@ -37,9 +38,13 @@ class Agent_TQL(BaseAgent):
         best_value, _ = self.best_value_and_action(nk)
         if not best_value:
             best_value = 0.0
-        old_val = self.values[(k, a)]
+        old_val = self.qvalues[(k, a)]
         new_val = r + self.gamma * best_value - old_val
-        self.values[(k, a)] += self.alpha * new_val
+        self.qvalues[(k, a)] += self.alpha * new_val
+
+    def td_0_evaluation(self, k, r, nk):
+        old_val = self.values[k]
+        self.values[k] += self.alpha*(r + self.gamma*self.values[nk] - old_val)
 
     def select_action(self, key):
         state = self.key_to_state(key)
@@ -51,7 +56,7 @@ class Agent_TQL(BaseAgent):
             # print('Accion Aleatoria!')
             a = np.random.choice(actions)
         else:
-            values = map(lambda a: self.values[(key, a)], actions)
+            values = map(lambda a: self.qvalues[(key, a)], actions)
             values = list(values)
             if all(values == 0 for v in values):
                 a = np.random.choice(actions)
@@ -62,3 +67,4 @@ class Agent_TQL(BaseAgent):
 
     def get_step_info(self, key, action, reward, new_key):
         self.value_update(key, action, reward, new_key)
+        self.td_0_evaluation(key, reward, new_key)
