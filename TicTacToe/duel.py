@@ -3,9 +3,12 @@ from torch.utils.tensorboard import SummaryWriter
 from .board import Board as board
 from .human import Human as human
 from .base_agent import BaseAgent
+from random import shuffle 
 import json
 import numpy as np
 import pandas as pd
+
+import pdb; pdb.set_trace()
 
 
 def get_turn(state):
@@ -74,7 +77,7 @@ def duel(playerX, playerO, show=False, board=board(), old_key=None, old_action=N
     board.reset()
     return winner_value
 
-
+    import pdb; pdb.set_trace()
 def play_n_duels(games, agent1, agent2, show=False):
     '''
     Realiza n partidas entre dos jugadores y mide el rendimiento 
@@ -102,3 +105,28 @@ def play_n_duels(games, agent1, agent2, show=False):
             frec.append((agent2.wins+draws)/k)
         
     return np.array(frec)
+
+
+def championship(players):
+
+    shuffle(players)
+    winners = []
+    if len(players) == 1:
+        import pdb; pdb.set_trace()
+        return players
+
+    while players:
+        playerX = players.pop()
+        playerO = players.pop()
+        winner = duel(playerX, playerO)
+        if winner in set([0, 1]):
+            playerX.wins += 1
+            winners.append(playerX)
+        else:
+            playerO.wins += 1
+            winners.append(playerO)
+
+    championship(winners)
+
+        
+
