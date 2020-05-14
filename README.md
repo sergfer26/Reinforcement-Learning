@@ -1,6 +1,6 @@
 # Tic Tac Toe
 
-El propósito de este proyecto es el de poner en práctica distintas técnicas y algoritmos de *Reinforcement learning* para crear agentes/jugadores autónonomos, capaces de competir contra un humano en un partida del juego de tablero *gato*.
+El propósito de este proyecto es el de poner en práctica distintas técnicas y algoritmos de *Reinforcement learning* para crear agentes/jugadores autónonomos, capaces de competir contra un humano en un partida del juego de tablero, *gato*.
 
 ## Para empezar
 
